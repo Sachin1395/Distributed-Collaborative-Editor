@@ -1,0 +1,287 @@
+/* Root theme variables */
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --border: #e5e7eb;
+  --gray-3: #f3f4f6;
+  --code-bg: #f3f4f6;
+  --highlight: #fef08a;
+}
+
+[data-theme="dark"] {
+  --background: #0e0e11;
+  --foreground: #f1f5f9;
+  --accent: #a78bfa;
+  --accent-hover: #c4b5fd;
+  --border: #334155;
+  --gray-3: #475569;
+  --code-bg: #1e293b;
+  --highlight: #fde68a;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: all 0.3s ease;
+}
+
+/* Wrapper styling */
+.editor-wrapper {
+  padding: 2rem;
+}
+
+/* Editor main box */
+.editor-div {
+  max-width: 760px;
+  margin: 2rem auto;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* TipTap content styling */
+.tiptap {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  outline: none;
+}
+
+.tiptap :first-child {
+  margin-top: 0;
+}
+
+/* Headings */
+.tiptap h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+}
+
+.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 1.5rem 0 1rem;
+}
+
+.tiptap h3 {
+  font-size: 1.3rem;
+  margin: 1.2rem 0 0.8rem;
+}
+
+/* Lists */
+.tiptap ul, .tiptap ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+
+.tiptap li {
+  margin-bottom: 0.4rem;
+}
+
+/* Blockquote */
+.tiptap blockquote {
+  padding-left: 1rem;
+  border-left: 4px solid var(--accent);
+  color: var(--foreground);
+  margin: 1.5rem 0;
+  font-style: italic;
+}
+
+/* Code */
+.tiptap code {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: monospace;
+}
+
+.tiptap mark {
+  background-color: var(--highlight);
+}
+
+/* MenuBar */
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.menu-bar button {
+  background-color: transparent;
+  border: 1px solid var(--gray-3);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  color: var(--foreground);
+}
+
+.menu-bar button:hover {
+  background-color: var(--gray-3);
+}
+
+.menu-bar button.is-active {
+  background-color: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Add Image Button */
+.image-btn {
+  margin-top: 1rem;
+  padding: 0.4rem 0.8rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.image-btn:hover {
+  background: var(--accent-hover);
+}
+
+/* Bubble Menu */
+.bubble-menu {
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  display: flex;
+  padding: 0.3rem;
+  gap: 0.2rem;
+  z-index: 999;
+}
+
+.bubble-menu button {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.bubble-menu button:hover {
+  background-color: var(--gray-3);
+}
+
+.bubble-menu button.is-active {
+  background-color: var(--accent);
+  color: white;
+}
+
+/* Floating Menu */
+.floating-menu {
+  display: flex;
+  background-color: var(--gray-3);
+  padding: 0.2rem;
+  border-radius: 0.5rem;
+  gap: 0.2rem;
+  margin-top: 0.5rem;
+}
+
+.floating-menu button {
+  background-color: transparent;
+  padding: 0.275rem 0.5rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  color: var(--foreground);
+  border: none;
+}
+
+.floating-menu button:hover {
+  background-color: var(--background);
+}
+
+.floating-menu button.is-active {
+  background-color: var(--accent);
+  color: white;
+}
+
+
+.menu-bar-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--background);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 0.5rem;
+  border-right: 1px solid var(--border);
+  padding-right: 0.75rem;
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: none;
+  padding: 0.35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  transition: background 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background-color: var(--gray-3);
+}
+
+.toolbar-btn.is-active {
+  background-color: var(--accent);
+  color: white;
+}
+
+.menu-bar-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 0.25rem;
+  background-color: var(--gray-3);
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 0.375rem;
+  color: var(--foreground);
+  transition: background 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.toolbar-btn.is-active {
+  background: var(--accent);
+  color: white;
+}
