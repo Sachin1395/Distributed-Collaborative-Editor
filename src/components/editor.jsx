@@ -15,7 +15,13 @@ import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai'
 import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'react-icons/md'
 import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
 import { MdImage } from 'react-icons/md'
+
 import './editor.css'
+
+
+
+
+
 const Tiptap = () => {
   const editor = useEditor({
     extensions: [Document, Paragraph, Text, BulletList, ListItem, OrderedList, Heading.configure({
