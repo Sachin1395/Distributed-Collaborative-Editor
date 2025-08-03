@@ -1,107 +1,124 @@
-import React from 'react'
-import './editor.css'
-import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Highlight from '@tiptap/extension-highlight'
-import TextAlign from '@tiptap/extension-text-align'
+import { useEditor, EditorContent } from '@tiptap/react'
+import Heading from '@tiptap/extension-heading'
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
 import Image from '@tiptap/extension-image'
-import { BubbleMenu, FloatingMenu } from '@tiptap/react/menus'
+import Document from '@tiptap/extension-document'
+import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
+import { BulletList, ListItem, OrderedList } from '@tiptap/extension-list'
+import Paragraph from '@tiptap/extension-paragraph'
+import Text from '@tiptap/extension-text'
+import React, { useCallback } from 'react'
+import { MdFormatBold, MdFormatItalic, MdFormatUnderlined } from 'react-icons/md'
+import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai'
+import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'react-icons/md'
+import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
+import { MdImage } from 'react-icons/md'
 
-import ThemeToggle from './toggletheme'
+import './editor.css'
 
-// Menu bar buttons
-const MenuBar = ({ editor }) => {
-  if (!editor) return null
 
-  const buttons = [
-    { label: 'H1', action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(), isActive: editor.isActive('heading', { level: 1 }) },
-    { label: 'H2', action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(), isActive: editor.isActive('heading', { level: 2 }) },
-    { label: 'Bold', action: () => editor.chain().focus().toggleBold().run(), isActive: editor.isActive('bold') },
-    { label: 'Italic', action: () => editor.chain().focus().toggleItalic().run(), isActive: editor.isActive('italic') },
-    { label: 'Strike', action: () => editor.chain().focus().toggleStrike().run(), isActive: editor.isActive('strike') },
-    { label: 'Highlight', action: () => editor.chain().focus().toggleHighlight().run(), isActive: editor.isActive('highlight') },
-    { label: 'Left', action: () => editor.chain().focus().setTextAlign('left').run(), isActive: editor.isActive({ textAlign: 'left' }) },
-    { label: 'Center', action: () => editor.chain().focus().setTextAlign('center').run(), isActive: editor.isActive({ textAlign: 'center' }) },
-    { label: 'Right', action: () => editor.chain().focus().setTextAlign('right').run(), isActive: editor.isActive({ textAlign: 'right' }) },
-    { label: 'Justify', action: () => editor.chain().focus().setTextAlign('justify').run(), isActive: editor.isActive({ textAlign: 'justify' }) },
-  ]
 
-  return (
-    <div className="menu-bar">
-      {buttons.map((btn, index) => (
-        <button
-          key={index}
-          onClick={btn.action}
-          className={btn.isActive ? 'is-active' : ''}
-        >
-          {btn.label}
-        </button>
-      ))}
-    </div>
-  )
-}
 
-const Editor = () => {
+
+const Tiptap = () => {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Highlight,
-      Image,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-        defaultAlignment: 'left',
-      }),
-    ],
-    content: `
-      <h1>Getting started</h1>
-      <p>Welcome to the <em>Simple Editor</em>! This integrates <strong>open source</strong> UI components.</p>
-    `,
+    extensions: [Document, Paragraph, Text, BulletList, ListItem, OrderedList, Heading.configure({
+      levels: [1, 2, 3],
+    }), Bold, Italic, Image, Underline, TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    })],
+    content: '<h1>Hello World!</hi></br><p> Dream it. Build it. Own it. You Can! </p>',
   })
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:')
+  const addImage = useCallback(() => {
+    const url = window.prompt('URL')
+
     if (url) {
       editor.chain().focus().setImage({ src: url }).run()
     }
-  }
+  }, [editor])
 
   if (!editor) return null
 
   return (
-    <div className="editor-wrapper">
-      <ThemeToggle />
+    <>
+      <div className="control-group">
+        <div className="toolbar">
+          <div className="group">
+            <button onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'active' : ''}><MdFormatBold /></button>
+            <button onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'active' : ''}><MdFormatItalic /></button>
+            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? 'active' : ''}><MdFormatUnderlined /></button>
+          </div>
 
-      <BubbleMenu editor={editor} className="bubble-menu">
-        <button onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : ''}>
-          B
-        </button>
-        <button onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'is-active' : ''}>
-          I
-        </button>
-        <button onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive('strike') ? 'is-active' : ''}>
-          S
-        </button>
-      </BubbleMenu>
+          <div className="group">
+            <button onClick={() => editor.chain().focus().toggleBulletList().run()}><AiOutlineUnorderedList /></button>
+            <button onClick={() => editor.chain().focus().toggleOrderedList().run()}><AiOutlineOrderedList /></button>
+          </div>
 
-      <FloatingMenu editor={editor} className="floating-menu">
-        <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}>
-          H1
-        </button>
-        <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}>
-          H2
-        </button>
-        <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive('bulletList') ? 'is-active' : ''}>
-          • List
-        </button>
-      </FloatingMenu>
+          <div className="group">
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><MdLooksOne /></button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><MdLooksTwo /></button>
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><MdLooks3 /></button>
+          </div>
 
-      <div className="editor-div">
-        <MenuBar editor={editor} />
-        <button onClick={addImage} className="image-btn">+ Add Image</button>
-        <EditorContent editor={editor} className="tiptap" />
+          <div className="group">
+            <button onClick={() => editor.chain().focus().setTextAlign('left').run()}><MdFormatAlignLeft /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('center').run()}><MdFormatAlignCenter /></button>
+            <button onClick={() => editor.chain().focus().setTextAlign('right').run()}><MdFormatAlignRight /></button>
+          </div>
+
+          <div className="group">
+            <button onClick={addImage}><MdImage /></button>
+          </div>
+        </div>
+
       </div>
-    </div>
+
+      <EditorContent className='editor-div' editor={editor} />
+    </>
   )
 }
 
-export default Editor
+export default Tiptap
+
+
+
+// <button
+//             onClick={() => editor.chain().focus().toggleBulletList().run()}
+//             className={editor.isActive('bulletList') ? 'is-active' : ''}
+//           >
+//             Toggle bullet list
+//           </button>
+//           <button
+//             onClick={() => editor.chain().focus().splitListItem('listItem').run()}
+//             className={editor.isActive('bulletList') ? 'is-active' : ''}
+//           >
+//             Split list item
+//           </button>
+//           {/* <button
+//             onClick={() => editor.chain().focus().sinkListItem('listItem').run()}
+//             disabled={!editor.can().sinkListItem('listItem')}
+//           >
+//             Sink list item
+//           </button> */}
+//           <button
+//             onClick={() => editor.chain().focus().liftListItem('listItem').run()}
+//             className={editor.isActive('bulletList') ? 'is-active' : ''}
+//           >
+//             Lift list item
+//           </button>
+
+//           <button
+//             onClick={() => editor.chain().focus().toggleOrderedList().run()}
+//             className={editor.isActive('orderedList') ? 'is-active' : ''}
+//           >
+//             Toggle ordered list
+//           </button>
+//           <button
+//             onClick={() => editor.chain().focus().splitListItem('listItem').run()}
+//             className={editor.isActive('orderedList') ? 'is-active' : ''}
+//           >
+//             Split list item
+//           </button>
