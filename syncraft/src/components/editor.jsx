@@ -16,20 +16,31 @@ import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'reac
 import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
 import { MdImage } from 'react-icons/md'
 
+
+import Collaboration from '@tiptap/extension-collaboration'
+import * as Y from 'yjs'
+import { HocuspocusProvider } from '@hocuspocus/provider'
+
+
 import './editor.css'
 
-
-
-
+const ydoc = new Y.Doc();
+const provider = new HocuspocusProvider({
+  url: "ws://localhost:1234", 
+  name: "my-document", 
+  document: ydoc,
+});
 
 const Tiptap = () => {
   const editor = useEditor({
     extensions: [Document, Paragraph, Text, BulletList, ListItem, OrderedList, Heading.configure({
       levels: [1, 2, 3],
-    }), Bold, Italic, Image, Underline, TextAlign.configure({
+    }), Bold, Italic, Image, Underline,Collaboration.configure({
+      document: ydoc,
+    }), TextAlign.configure({
       types: ['heading', 'paragraph'],
     })],
-    content: '<h1>Hello World!</hi></br><p> Dream it. Build it. Own it. You Can! </p>',
+    // content: '<h1>Hello World!</hi></br><p> Dream it. Build it. Own it. You Can! </p>',
   })
 
   const addImage = useCallback(() => {
