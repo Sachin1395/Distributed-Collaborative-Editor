@@ -9,27 +9,34 @@ import TextAlign from '@tiptap/extension-text-align'
 import { BulletList, ListItem, OrderedList } from '@tiptap/extension-list'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
+import { Placeholder } from '@tiptap/extensions'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
+
 import React, { useCallback } from 'react'
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined } from 'react-icons/md'
 import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai'
 import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'react-icons/md'
 import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
 import { MdImage } from 'react-icons/md'
+import './editor.css'
 
 
 import Collaboration from '@tiptap/extension-collaboration'
 import * as Y from 'yjs'
-import { HocuspocusProvider } from '@hocuspocus/provider'
+// import { HocuspocusProvider } from '@hocuspocus/provider'
+
+import { WebsocketProvider } from 'y-websocket'
+const ydoc = new Y.Doc()
+const provider = new WebsocketProvider('ws://localhost:1234', 'my-doc', ydoc)
 
 
-import './editor.css'
 
-const ydoc = new Y.Doc();
-const provider = new HocuspocusProvider({
-  url: "ws://localhost:1234", 
-  name: "my-document", 
-  document: ydoc,
-});
+// const ydoc = new Y.Doc();
+// const provider = new HocuspocusProvider({
+//   url: "ws://localhost:1234", 
+//   name: "my-document", 
+//   document: ydoc,
+// });
 
 const Tiptap = () => {
   const editor = useEditor({
@@ -39,7 +46,17 @@ const Tiptap = () => {
       document: ydoc,
     }), TextAlign.configure({
       types: ['heading', 'paragraph'],
-    })],
+    }), CollaborationCaret.configure({
+        provider,
+        user: {
+          name: 'Sachin',
+          color: '#f783ac',
+        },
+      }),Placeholder.configure({
+        placeholder: 'Write something … It’ll be shared with everyone else looking at this example.',
+      }),
+    ],
+    
     // content: '<h1>Hello World!</hi></br><p> Dream it. Build it. Own it. You Can! </p>',
   })
 
