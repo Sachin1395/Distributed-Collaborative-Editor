@@ -23,12 +23,16 @@ import './editor.css'
 
 import Collaboration from '@tiptap/extension-collaboration'
 import * as Y from 'yjs'
-// import { HocuspocusProvider } from '@hocuspocus/provider'
+import { HocuspocusProvider } from '@hocuspocus/provider'
 
-import { WebsocketProvider } from 'y-websocket'
+// import { WebsocketProvider } from 'y-websocket'
 const ydoc = new Y.Doc()
-const provider = new WebsocketProvider('ws://localhost:1234', 'my-doc', ydoc)
-
+// const provider = new WebsocketProvider('ws://localhost:1234', 'my-doc', ydoc)
+const provider = new HocuspocusProvider({
+  url: "ws://localhost:1234",
+  name: "my-doc",
+  document: ydoc,
+})
 
 
 // const ydoc = new Y.Doc();
