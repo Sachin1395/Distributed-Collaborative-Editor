@@ -61,7 +61,7 @@ const server = new Server({
   port: 1234,
   extensions: [
     new Redis({
-      url: 'rediss://default:**@pretty-glowworm-19249.upstash.io:6379',  // <--- Use the full URL here
+      url: 'rediss://default:AksxAAIgcDEVw8PrZbZI8Tu6wClpXkYu1cLOlsXehwBo7a5YWayDPg@pretty-glowworm-19249.upstash.io:6379',  // <--- Use the full URL here
       // You don't need host, port, username, password, tls if using the URL
     }),
   ],
