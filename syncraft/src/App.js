@@ -46,10 +46,11 @@ function App() {
       {/* User’s documents list */}
       <Route path="/my-documents/:userId" element={<Documents />} />
 
-      {/* Editor page */}
       <Route
         path="/documents/:userId/:docId"
-        element={<EditorWrapper user={session.user} />}
+        element={
+          session?.user ? <EditorWrapper user={session.user} /> : <Navigate to="/" />
+        }
       />
 
       {/* Catch-all → send back to docs list */}
@@ -63,6 +64,7 @@ function App() {
 
 function EditorWrapper({ user }) {
   const { docId } = useParams()
+  if (!user) return <div>Loading editor...</div>
   return <Tiptap docId={docId} user={user} />
 }
 

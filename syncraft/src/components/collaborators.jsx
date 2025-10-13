@@ -4,13 +4,12 @@ export default function Collaborators({ provider }) {
   const [users, setUsers] = useState([])
 
   useEffect(() => {
-    // awareness state contains all connected clients
+
     const updateUsers = () => {
       const states = Array.from(provider.awareness.getStates().values())
-      setUsers(states.map(s => s.user)) // our `user` object from CollaborationCaret
+      setUsers(states.map(s => s.user)) 
     }
 
-    // initial load
     updateUsers()
 
     // listen for changes

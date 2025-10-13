@@ -12,7 +12,7 @@ import Text from '@tiptap/extension-text'
 import { Placeholder } from '@tiptap/extensions'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined } from 'react-icons/md'
 import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai'
 import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'react-icons/md'
@@ -20,10 +20,9 @@ import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
 import { MdImage } from 'react-icons/md'
 import './editor.css'
 
+import InviteCollaborator from './InviteCollaborator'
 import Collaborators from './collaborators'
-
-
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { supabase } from "./supabase_client"
 
 import Collaboration from '@tiptap/extension-collaboration'
@@ -32,15 +31,26 @@ import { HocuspocusProvider } from '@hocuspocus/provider'
 
 const Tiptap = ({ docId, user }) => {
   const navigate = useNavigate()
-  // Create a Y.Doc for CRDT
-  const ydoc = new Y.Doc()
 
-  // Connect to Hocuspocus server with docId
-  const provider = new HocuspocusProvider({
+
+  const ydoc = useMemo(() => new Y.Doc(), [docId])
+
+  const provider = useMemo(() => new HocuspocusProvider({
     url: "ws://localhost:1234",
-    name: docId, // <-- dynamic per document
+    name: docId,
     document: ydoc,
-  })
+  }), [docId, ydoc])
+
+  const [userRole, setUserRole] = useState(null)
+
+
+  useEffect(() => {
+    return () => {
+      provider.disconnect()
+      ydoc.destroy()
+    }
+  }, [provider, ydoc])
+
 
   useEffect(() => {
     const loadContent = async () => {
@@ -57,14 +67,11 @@ const Tiptap = ({ docId, user }) => {
 
       if (data?.content) {
         try {
-
           const binaryString = atob(data.content)
           const update = new Uint8Array(binaryString.length)
           for (let i = 0; i < binaryString.length; i++) {
             update[i] = binaryString.charCodeAt(i)
           }
-
-
           Y.applyUpdate(ydoc, update)
           console.log("Loaded saved content into Y.Doc")
         } catch (err) {
@@ -72,11 +79,82 @@ const Tiptap = ({ docId, user }) => {
         }
       }
     }
-
     loadContent()
-  }, [docId])
+  }, [docId, ydoc])
+
+  function stringToColor(str) {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    let color = '#'
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xff
+      color += ('00' + value.toString(16)).slice(-2)
+    }
+    return color
+  }
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user?.id || !docId) return
+      console.log("Fetching role for user:", user.id, "and doc:", docId)
+      // Step 1: Check if user is owner
+      const { data: docData, error: docError } = await supabase
+        .from("documents")
+        .select("owner_id")
+        .eq("id", docId)
+        .maybeSingle();
+
+
+
+      if (docError) {
+        console.error("Error fetching document owner:", docError)
+        return
+      }
+
+      if (docData?.owner_id === user.id) {
+        setUserRole("owner")
+        return
+      }
+
+      console.log("qwner", docData?.owner_id, "user", user.id)
+
+      // Step 2: If not owner, check collaborators table
+      const { data: collabData, error: collabError } = await supabase
+        .from("collaborators")
+        .select("role")
+        .eq("document_id", docId)
+        .eq("user_id", user.id)
+        .single()
+
+      if (collabError && collabError.code !== "PGRST116") {
+        console.error("Error fetching collaborator role:", collabError)
+        return
+      }
+
+      if (collabData?.role == "editor") {
+        setUserRole(collabData.role) // "editor" or "viewer"
+      } else if (collabData?.role === "viewer") {
+        setUserRole("viewer") // default fallback if not in table
+      } else {
+        setUserRole("UnidentifiedUser") // no access
+      }
+    }
+
+    fetchUserRole()
+  }, [docId, user?.id])
+
+  console.log("User Role:", userRole)
+
+  const isOwner = userRole === "owner"
+  const isEditor = userRole === "editor"
+  const isViewer = userRole === "viewer"
+
+
 
   const editor = useEditor({
+    editable: userRole !== "viewer",
     extensions: [
       Document,
       Paragraph,
@@ -100,8 +178,8 @@ const Tiptap = ({ docId, user }) => {
       CollaborationCaret.configure({
         provider,
         user: {
-          name: user?.email || "Anonymous", // <-- dynamic user from Supabase
-          color: stringToColor(user?.email || "anon"), // random color from email
+          name: user?.email || "Anonymous",
+          color: stringToColor(user?.email || "anon"),
         },
       }),
       Placeholder.configure({
@@ -110,45 +188,30 @@ const Tiptap = ({ docId, user }) => {
     ],
   })
 
-  // helper: map email → color
-  function stringToColor(str) {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    let color = '#'
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xff
-      color += ('00' + value.toString(16)).slice(-2)
-    }
-    return color
-  }
-
   const addImage = useCallback(() => {
     const url = window.prompt('Enter image URL')
     if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
+      editor?.chain().focus().setImage({ src: url }).run()
     }
   }, [editor])
 
-
-
-
+  useEffect(() => {
+    if (userRole && !["owner", "editor", "viewer"].includes(userRole)) {
+      alert("You do not have permission to access this document.")
+      navigate("/")
+    }
+  }, [userRole, navigate])
 
   async function saveDocument(docId, ydoc) {
     try {
-      // Encode Yjs document into Base64
       const update = Y.encodeStateAsUpdate(ydoc)
       const base64 = btoa(String.fromCharCode(...update))
-
-      // Save to Supabase
       const { error } = await supabase
         .from("documents")
         .update({ content: base64 })
         .eq("id", docId)
 
-      alert("Save successfull")
-
+      alert("Save successful")
       if (error) {
         console.error("Error saving document:", error)
       } else {
@@ -159,25 +222,24 @@ const Tiptap = ({ docId, user }) => {
     }
   }
 
-
-
-
-
-  if (!editor) return null
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate("/")
+  }
+
+  if (!editor || !user?.email) {
+    return <div>Loading editor...</div>
   }
 
   return (
     <>
       <div className="control-group">
         <div className="toolbar">
-          <div className="group">
-            <button onClick={() => saveDocument(docId, ydoc)}> Save</button>
-
-          </div>
+          {(isOwner || isEditor) && (
+            <div className="group">
+              <button onClick={() => saveDocument(docId, ydoc)}> Save</button>
+            </div>
+          )}
           <div className="group">
             <button onClick={() => editor.chain().focus().toggleBold().run()}
               className={editor.isActive('bold') ? 'active' : ''}>
@@ -230,10 +292,15 @@ const Tiptap = ({ docId, user }) => {
             <button onClick={addImage}><MdImage /></button>
           </div>
 
-
           <div className="group">
             <button onClick={handleLogout}>Logout</button>
           </div>
+
+          {isOwner && (
+            <div>
+              <InviteCollaborator documentId={docId} />
+            </div>
+          )}
 
           <div className="group" style={{ marginLeft: "auto" }}>
             <Collaborators provider={provider} />
