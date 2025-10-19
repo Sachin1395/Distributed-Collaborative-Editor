@@ -25,6 +25,12 @@ import Collaborators from './collaborators'
 import { useNavigate } from "react-router-dom"
 import { supabase } from "./supabase_client"
 
+import { saveAs } from "file-saver"
+
+import html2pdf from "html2pdf.js"
+import htmlDocx from "html-docx-js/dist/html-docx"
+import jsPDF from "jspdf"
+
 import Collaboration from '@tiptap/extension-collaboration'
 import * as Y from 'yjs'
 import { HocuspocusProvider } from '@hocuspocus/provider'
@@ -222,6 +228,76 @@ const Tiptap = ({ docId, user }) => {
     }
   }
 
+async function downloadAsDocx() {
+  try {
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Arial', sans-serif; font-size: 12pt; }
+          h1, h2, h3 { font-weight: bold; }
+          p { line-height: 1.5; }
+          img { max-width: 100%; height: auto; }
+        </style>
+      </head>
+      <body>${editor.getHTML()}</body>
+      </html>
+    `
+
+    const converted = htmlDocx.asBlob(htmlContent, { orientation: "portrait" })
+    saveAs(converted, `document-${docId}.docx`)
+  } catch (error) {
+    console.error("Error exporting DOCX:", error)
+  }
+}
+
+async function downloadAsPDF() {
+  const htmlContent = `
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          @page { size: A4; margin: 20mm; }
+          body {
+            font-family: 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+          }
+          h1, h2, h3 { font-weight: bold; margin-bottom: 8px; }
+          p { margin: 0 0 10px; }
+          ul, ol { margin: 10px 0; padding-left: 20px; }
+          img { max-width: 100%; height: auto; }
+        </style>
+      </head>
+      <body>${editor.getHTML()}</body>
+    </html>
+  `
+
+  const element = document.createElement("div")
+  element.innerHTML = htmlContent
+  document.body.appendChild(element)
+
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  })
+
+  await pdf.html(element, {
+    x: 10,
+    y: 10,
+    html2canvas: { scale: 1 },
+    callback: function (pdf) {
+      pdf.save(`document-${docId}.pdf`)
+      document.body.removeChild(element)
+    },
+  })
+}
+
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate("/")
@@ -295,6 +371,13 @@ const Tiptap = ({ docId, user }) => {
           <div className="group">
             <button onClick={handleLogout}>Logout</button>
           </div>
+          {(isOwner || isEditor) && (
+            <div className="group">
+              <button onClick={() => downloadAsDocx()}>Download DOCX</button>
+              <button onClick={() => downloadAsPDF()}>Download PDF</button>
+            </div>
+          )}
+
 
           {isOwner && (
             <div>
