@@ -1,9 +1,11 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { supabase } from "./components/supabase_client"
+import LandingPage from "./components/LandingPage"
 import Login from "./components/login"
 import Documents from "./components/documents"
 import Tiptap from "./components/editor"
+import SyncraftLoader from "./components/Loader"
 
 function App() {
   const [session, setSession] = useState(null)
@@ -24,39 +26,37 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  if (loading) return <div>Loading...</div>
-
-  if (!session) {
-    return (
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    )
-  }
+  if (loading) return <SyncraftLoader message="Loading" />
 
   return (
     <Routes>
-      {/* Redirect root → documents list */}
-      <Route
-        path="/"
-        element={<Navigate to={`/my-documents/${session.user.id}`} replace />}
+      {/* Landing page - public route */}
+      <Route 
+        path="/" 
+        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <LandingPage />} 
       />
 
-      {/* User’s documents list */}
-      <Route path="/my-documents/:userId" element={<Documents />} />
+      {/* Login/Signup page */}
+      <Route 
+        path="/login" 
+        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <Login />} 
+      />
+
+      {/* Protected routes - require authentication */}
+      <Route
+        path="/my-documents/:userId"
+        element={session ? <Documents /> : <Navigate to="/login" replace />}
+      />
 
       <Route
         path="/documents/:userId/:docId"
-        element={
-          session?.user ? <EditorWrapper user={session.user} /> : <Navigate to="/" />
-        }
+        element={session ? <EditorWrapper user={session.user} /> : <Navigate to="/login" replace />}
       />
 
-      {/* Catch-all → send back to docs list */}
+      {/* Catch-all redirect */}
       <Route
         path="*"
-        element={<Navigate to={`/my-documents/${session.user.id}`} replace />}
+        element={<Navigate to="/" replace />}
       />
     </Routes>
   )
@@ -64,7 +64,7 @@ function App() {
 
 function EditorWrapper({ user }) {
   const { docId } = useParams()
-  if (!user) return <div>Loading editor...</div>
+  if (!user) return <SyncraftLoader message="Loading Editor" />
   return <Tiptap docId={docId} user={user} />
 }
 

@@ -2,7 +2,6 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import Heading from '@tiptap/extension-heading'
 import Bold from '@tiptap/extension-bold'
 import Italic from '@tiptap/extension-italic'
-import Image from '@tiptap/extension-image'
 import Document from '@tiptap/extension-document'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
@@ -11,52 +10,65 @@ import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
 import { Placeholder } from '@tiptap/extensions'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
-
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { ResizableImage } from './ResizableImage'
+import { CodeBlockButton } from '@/components/tiptap-ui/code-block-button'
+import CodeBlock from '@tiptap/extension-code-block'
+import RenameModal from './RenameModal'
+import { MdMenu, MdClose, MdSave, MdLogout, MdDownload, MdImage } from 'react-icons/md'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined } from 'react-icons/md'
 import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai'
 import { MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight } from 'react-icons/md'
 import { MdLooksOne, MdLooksTwo, MdLooks3 } from 'react-icons/md'
-import { MdImage } from 'react-icons/md'
+import { FaFilePdf, FaFileWord } from 'react-icons/fa'
 import './editor.css'
-
+import { FontFamily } from './FontFamily'
+import { IndexeddbPersistence } from 'y-indexeddb'
 import InviteCollaborator from './InviteCollaborator'
 import Collaborators from './collaborators'
 import { useNavigate } from "react-router-dom"
 import { supabase } from "./supabase_client"
-
 import { saveAs } from "file-saver"
-
 import html2pdf from "html2pdf.js"
 import htmlDocx from "html-docx-js/dist/html-docx"
 import jsPDF from "jspdf"
-
 import Collaboration from '@tiptap/extension-collaboration'
 import * as Y from 'yjs'
 import { HocuspocusProvider } from '@hocuspocus/provider'
+import SyncraftLoader from './Loader'
 
 const Tiptap = ({ docId, user }) => {
+  const renderCountRef = useRef(0)
+  renderCountRef.current++
+  console.log("🌀 Tiptap render count:", renderCountRef.current, "for docId:", docId, "user:", user?.email)
+
   const navigate = useNavigate()
-
-
-  const ydoc = useMemo(() => new Y.Doc(), [docId])
-
-  const provider = useMemo(() => new HocuspocusProvider({
-    url: "ws://localhost:1234",
-    name: docId,
-    document: ydoc,
-  }), [docId, ydoc])
-
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false)
+  const [showRenameModal, setShowRenameModal] = useState(false)
+  const [currentTitle, setCurrentTitle] = useState("")
   const [userRole, setUserRole] = useState(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // ✅ Memoize ydoc and provider so they're created once per docId
+  const { ydoc, provider } = useMemo(() => {
+    console.log("🌐 Creating provider for:", docId)
+    const ydoc = new Y.Doc()
+    const provider = new HocuspocusProvider({
+      url: "ws://localhost:1234",
+      name: docId,
+      document: ydoc,
+    })
+    return { ydoc, provider }
+  }, [docId])
 
+  // ✅ Cleanup when docId changes or component unmounts
   useEffect(() => {
     return () => {
+      console.log("🧹 Cleaning up provider and ydoc for:", docId)
       provider.disconnect()
       ydoc.destroy()
     }
-  }, [provider, ydoc])
-
+  }, [provider, ydoc, docId])
 
   useEffect(() => {
     const loadContent = async () => {
@@ -105,14 +117,12 @@ const Tiptap = ({ docId, user }) => {
     const fetchUserRole = async () => {
       if (!user?.id || !docId) return
       console.log("Fetching role for user:", user.id, "and doc:", docId)
-      // Step 1: Check if user is owner
+
       const { data: docData, error: docError } = await supabase
         .from("documents")
         .select("owner_id")
         .eq("id", docId)
         .maybeSingle();
-
-
 
       if (docError) {
         console.error("Error fetching document owner:", docError)
@@ -124,9 +134,8 @@ const Tiptap = ({ docId, user }) => {
         return
       }
 
-      console.log("qwner", docData?.owner_id, "user", user.id)
+      console.log("owner", docData?.owner_id, "user", user.id)
 
-      // Step 2: If not owner, check collaborators table
       const { data: collabData, error: collabError } = await supabase
         .from("collaborators")
         .select("role")
@@ -140,11 +149,11 @@ const Tiptap = ({ docId, user }) => {
       }
 
       if (collabData?.role == "editor") {
-        setUserRole(collabData.role) // "editor" or "viewer"
+        setUserRole(collabData.role)
       } else if (collabData?.role === "viewer") {
-        setUserRole("viewer") // default fallback if not in table
+        setUserRole("viewer")
       } else {
-        setUserRole("UnidentifiedUser") // no access
+        setUserRole("UnidentifiedUser")
       }
     }
 
@@ -157,42 +166,52 @@ const Tiptap = ({ docId, user }) => {
   const isEditor = userRole === "editor"
   const isViewer = userRole === "viewer"
 
-
+  // Memoize extensions to prevent recreation
+  const extensions = useMemo(() => [
+    Document,
+    Paragraph,
+    FontFamily,
+    Text,
+    BulletList,
+    ListItem,
+    OrderedList,
+    Heading.configure({
+      levels: [1, 2, 3],
+    }),
+    Bold,
+    Italic,
+    ResizableImage,
+    Underline,
+    Collaboration.configure({
+      document: ydoc,
+    }),
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+    }),
+    CodeBlock.configure({ HTMLAttributes: { class: 'my-code-block' } }),
+    CollaborationCaret.configure({
+      provider: provider,
+      user: {
+        name: user?.email || "Anonymous",
+        color: stringToColor(user?.email || "anon"),
+      },
+    }),
+    Placeholder.configure({
+      placeholder: 'Write something… It will be shared with everyone else looking at this document.',
+    }),
+  ], [ydoc, provider, user?.email])
 
   const editor = useEditor({
     editable: userRole !== "viewer",
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      BulletList,
-      ListItem,
-      OrderedList,
-      Heading.configure({
-        levels: [1, 2, 3],
-      }),
-      Bold,
-      Italic,
-      Image,
-      Underline,
-      Collaboration.configure({
-        document: ydoc,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      CollaborationCaret.configure({
-        provider,
-        user: {
-          name: user?.email || "Anonymous",
-          color: stringToColor(user?.email || "anon"),
-        },
-      }),
-      Placeholder.configure({
-        placeholder: 'Write something… It’ll be shared with everyone else looking at this document.',
-      }),
-    ],
+    extensions,
   })
+
+  // Update editability when userRole changes
+  useEffect(() => {
+    if (editor && userRole !== null) {
+      editor.setEditable(userRole !== "viewer")
+    }
+  }, [editor, userRole])
 
   const addImage = useCallback(() => {
     const url = window.prompt('Enter image URL')
@@ -210,93 +229,216 @@ const Tiptap = ({ docId, user }) => {
 
   async function saveDocument(docId, ydoc) {
     try {
+      // 1️⃣ Fetch current title
+      const { data: docData, error: fetchError } = await supabase
+        .from("documents")
+        .select("title")
+        .eq("id", docId)
+        .single()
+
+      if (fetchError) {
+        console.error("Error fetching document title:", fetchError)
+        return
+      }
+
+      // 2️⃣ If it's "Untitled Document", show rename modal
+      if (docData?.title === "Untitled Document") {
+        setCurrentTitle(docData.title)
+        setShowRenameModal(true)
+        setMobileMenuOpen(false)
+        return // Don't save yet, wait for rename
+      }
+
+      // 3️⃣ Continue with content save
       const update = Y.encodeStateAsUpdate(ydoc)
       const base64 = btoa(String.fromCharCode(...update))
+
       const { error } = await supabase
         .from("documents")
         .update({ content: base64 })
         .eq("id", docId)
 
-      alert("Save successful")
       if (error) {
         console.error("Error saving document:", error)
+        alert("Failed to save document.")
       } else {
+        alert("✅ Save successful")
         console.log("✅ Document saved to Supabase")
       }
+      setMobileMenuOpen(false)
     } catch (err) {
       console.error("Unexpected error saving doc:", err)
     }
   }
 
-async function downloadAsDocx() {
-  try {
-    const htmlContent = `
+  // Add this new function to handle renaming from the modal
+  const handleRenameAndSave = async (newTitle) => {
+    try {
+      // Update the title
+      const { error: titleError } = await supabase
+        .from("documents")
+        .update({ title: newTitle })
+        .eq("id", docId)
+
+      if (titleError) {
+        throw titleError
+      }
+
+      console.log(`📝 Title updated to: ${newTitle}`)
+
+      // Now save the content
+      const update = Y.encodeStateAsUpdate(ydoc)
+      const base64 = btoa(String.fromCharCode(...update))
+
+      const { error: contentError } = await supabase
+        .from("documents")
+        .update({ content: base64 })
+        .eq("id", docId)
+
+      if (contentError) {
+        throw contentError
+      }
+
+      alert("✅ Document renamed and saved successfully")
+      console.log("✅ Document saved to Supabase")
+
+      setShowRenameModal(false)
+    } catch (err) {
+      console.error("Error saving document:", err)
+      throw err // Re-throw so the modal can show the error
+    }
+  }
+
+  function normalizeImageSizes(html) {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const images = doc.querySelectorAll('img')
+
+    images.forEach(img => {
+      const style = img.getAttribute('style') || ''
+      const widthMatch = style.match(/width:\s*(\d+)px/)
+      const heightMatch = style.match(/height:\s*(\d+)px/)
+
+      if (widthMatch) img.setAttribute('width', widthMatch[1])
+      if (heightMatch) img.setAttribute('height', heightMatch[1])
+    })
+
+    return doc.body.innerHTML
+  }
+
+  async function downloadAsDocx() {
+    try {
+      let htmlWithBase64Images = await convertImagesToBase64(editor.getHTML())
+
+      // Ensure empty paragraphs have a real invisible space inside
+      htmlWithBase64Images = htmlWithBase64Images.replace(
+        /<p>(\s|<br\s*\/?>)*<\/p>/g,
+        "<p>&#8203;</p>"
+      )
+
+      const htmlContent = `
       <!DOCTYPE html>
+  <html>
+  <head><meta charset="utf-8"></head>
+  <body>${htmlWithBase64Images}</body>
+  </html>
+    `
+
+      const converted = htmlDocx.asBlob(htmlContent)
+      saveAs(converted, `document-${docId}.docx`)
+      setMobileMenuOpen(false)
+    } catch (error) {
+      console.error("Error exporting DOCX:", error)
+    }
+  }
+
+  async function downloadAsPDF() {
+    const htmlWithBase64Images = await convertImagesToBase64(editor.getHTML())
+
+    const htmlContent = `
       <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: 'Arial', sans-serif; font-size: 12pt; }
-          h1, h2, h3 { font-weight: bold; }
-          p { line-height: 1.5; }
-          img { max-width: 100%; height: auto; }
-        </style>
-      </head>
-      <body>${editor.getHTML()}</body>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            @page { size: A4; margin: 20mm; }
+            body {
+              font-family: 'Times New Roman', serif;
+              font-size: 12pt;
+              line-height: 1.5;
+              color: #000;
+            }
+            h1, h2, h3 { font-weight: bold; margin-bottom: 8px; }
+            p { margin: 0 0 10px; }
+            ul, ol { margin: 10px 0; padding-left: 20px; }
+            img { display: block; }
+          </style>
+        </head>
+        <body>${htmlWithBase64Images}</body>
       </html>
     `
 
-    const converted = htmlDocx.asBlob(htmlContent, { orientation: "portrait" })
-    saveAs(converted, `document-${docId}.docx`)
-  } catch (error) {
-    console.error("Error exporting DOCX:", error)
+    const element = document.createElement("div")
+    element.innerHTML = htmlContent
+    document.body.appendChild(element)
+
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    })
+
+    await pdf.html(element, {
+      x: 10,
+      y: 10,
+      html2canvas: {
+        scale: 0.8,
+        useCORS: true,
+        allowTaint: true
+      },
+      callback: function (pdf) {
+        pdf.save(`document-${docId}.pdf`)
+        document.body.removeChild(element)
+        setShowDownloadMenu(false)
+        setMobileMenuOpen(false)
+      },
+    })
   }
-}
 
-async function downloadAsPDF() {
-  const htmlContent = `
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          @page { size: A4; margin: 20mm; }
-          body {
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            color: #000;
-          }
-          h1, h2, h3 { font-weight: bold; margin-bottom: 8px; }
-          p { margin: 0 0 10px; }
-          ul, ol { margin: 10px 0; padding-left: 20px; }
-          img { max-width: 100%; height: auto; }
-        </style>
-      </head>
-      <body>${editor.getHTML()}</body>
-    </html>
-  `
+  async function convertImagesToBase64(html) {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const images = doc.querySelectorAll('img')
 
-  const element = document.createElement("div")
-  element.innerHTML = htmlContent
-  document.body.appendChild(element)
+    const promises = Array.from(images).map(async (img) => {
+      try {
+        const src = img.getAttribute('src')
 
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  })
+        if (src.startsWith('data:')) {
+          return
+        }
 
-  await pdf.html(element, {
-    x: 10,
-    y: 10,
-    html2canvas: { scale: 1 },
-    callback: function (pdf) {
-      pdf.save(`document-${docId}.pdf`)
-      document.body.removeChild(element)
-    },
-  })
-}
+        const response = await fetch(src)
+        const blob = await response.blob()
+        const base64 = await blobToBase64(blob)
 
+        img.setAttribute('src', base64)
+      } catch (error) {
+        console.error('Error converting image:', error)
+      }
+    })
+
+    await Promise.all(promises)
+    return doc.body.innerHTML
+  }
+
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -304,18 +446,26 @@ async function downloadAsPDF() {
   }
 
   if (!editor || !user?.email) {
-    return <div>Loading editor...</div>
+    return <SyncraftLoader message='Craft in Progress'></SyncraftLoader>
   }
 
   return (
     <>
       <div className="control-group">
-        <div className="toolbar">
+        {/* Desktop Toolbar */}
+        <div className="toolbar desktop-toolbar">
           {(isOwner || isEditor) && (
             <div className="group">
-              <button onClick={() => saveDocument(docId, ydoc)}> Save</button>
+              <button
+                onClick={() => saveDocument(docId, ydoc)}
+                className="icon-button"
+                title="Save Document"
+              >
+                <MdSave />
+              </button>
             </div>
           )}
+
           <div className="group">
             <button onClick={() => editor.chain().focus().toggleBold().run()}
               className={editor.isActive('bold') ? 'active' : ''}>
@@ -369,15 +519,65 @@ async function downloadAsPDF() {
           </div>
 
           <div className="group">
-            <button onClick={handleLogout}>Logout</button>
+            <CodeBlockButton
+              editor={editor}
+              hideWhenUnavailable={true}
+              onToggled={() => console.log('Code block toggled!')}
+            />
           </div>
+
+          <div className="group">
+            <select
+              value={editor.getAttributes('textStyle').fontFamily || 'default'}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === 'default') {
+                  editor.chain().focus().unsetFontFamily().run()
+                } else {
+                  editor.chain().focus().setFontFamily(v).run()
+                }
+              }}
+              style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: '1px solid #ccc' }}
+            >
+              <option value="default">Font</option>
+              <option value="Inter">Inter</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Courier New">Courier New</option>
+            </select>
+          </div>
+
           {(isOwner || isEditor) && (
-            <div className="group">
-              <button onClick={() => downloadAsDocx()}>Download DOCX</button>
-              <button onClick={() => downloadAsPDF()}>Download PDF</button>
+            <div className="group download-menu-wrapper">
+              <button
+                className="icon-button"
+                onClick={() => setShowDownloadMenu(true)}
+                title="Download Document"
+              >
+                <MdDownload />
+              </button>
+
+              {showDownloadMenu && (
+                <div
+                  className="download-menu"
+                  onMouseEnter={() => setShowDownloadMenu(true)}
+                  onMouseLeave={() => setShowDownloadMenu(false)}
+                >
+                  <button onClick={downloadAsPDF} className="download-option">
+                    <FaFilePdf className="format-icon pdf" />
+                    <span>PDF</span>
+                  </button>
+                  <button onClick={downloadAsDocx} className="download-option">
+                    <FaFileWord className="format-icon docx" />
+                    <span>DOCX</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
-
 
           {isOwner && (
             <div>
@@ -388,53 +588,142 @@ async function downloadAsPDF() {
           <div className="group" style={{ marginLeft: "auto" }}>
             <Collaborators provider={provider} />
           </div>
+
+          <div className="group">
+            <button
+              onClick={handleLogout}
+              className="icon-button logout-button"
+              title="Logout"
+            >
+              <MdLogout />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Hamburger Menu */}
+        <div className="mobile-only mobile-header">
+          <div className="mobile-collaborators">
+            <Collaborators provider={provider} />
+          </div>
+          <button className="hamburger-button" onClick={() => setMobileMenuOpen(true)}>
+            <MdMenu />
+          </button>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        <div 
+          className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+
+        {/* Mobile Menu Sidebar */}
+        <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+          <div className="mobile-menu-header">
+            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Menu</h3>
+            <button 
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#374151' }}
+            >
+              <MdClose />
+            </button>
+          </div>
+
+          <div className="mobile-menu-content">
+            {(isOwner || isEditor) && (
+              <div className="mobile-menu-section">
+                <div className="mobile-menu-section-title">Document</div>
+                <div className="mobile-menu-buttons">
+                  <button onClick={() => saveDocument(docId, ydoc)} className="mobile-menu-button">
+                    <MdSave /> Save Document
+                  </button>
+                  <button onClick={downloadAsPDF} className="mobile-menu-button">
+                    <FaFilePdf className="pdf" /> Download PDF
+                  </button>
+                  <button onClick={downloadAsDocx} className="mobile-menu-button">
+                    <FaFileWord className="docx" /> Download DOCX
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mobile-menu-section">
+              <div className="mobile-menu-section-title">Formatting</div>
+              <div className="mobile-menu-buttons">
+                <button onClick={() => { editor.chain().focus().toggleBold().run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatBold /> Bold
+                </button>
+                <button onClick={() => { editor.chain().focus().toggleItalic().run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatItalic /> Italic
+                </button>
+                <button onClick={() => { editor.chain().focus().toggleUnderline().run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatUnderlined /> Underline
+                </button>
+              </div>
+            </div>
+
+            <div className="mobile-menu-section">
+              <div className="mobile-menu-section-title">Lists & Headings</div>
+              <div className="mobile-menu-buttons">
+                <button onClick={() => { editor.chain().focus().toggleBulletList().run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <AiOutlineUnorderedList /> Bullet List
+                </button>
+                <button onClick={() => { editor.chain().focus().toggleOrderedList().run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <AiOutlineOrderedList /> Numbered List
+                </button>
+                <button onClick={() => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdLooksOne /> Heading 1
+                </button>
+                <button onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdLooksTwo /> Heading 2
+                </button>
+              </div>
+            </div>
+
+            <div className="mobile-menu-section">
+              <div className="mobile-menu-section-title">Alignment</div>
+              <div className="mobile-menu-buttons">
+                <button onClick={() => { editor.chain().focus().setTextAlign('left').run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatAlignLeft /> Align Left
+                </button>
+                <button onClick={() => { editor.chain().focus().setTextAlign('center').run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatAlignCenter /> Align Center
+                </button>
+                <button onClick={() => { editor.chain().focus().setTextAlign('right').run(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdFormatAlignRight /> Align Right
+                </button>
+              </div>
+            </div>
+
+            <div className="mobile-menu-section">
+              <div className="mobile-menu-section-title">Insert</div>
+              <div className="mobile-menu-buttons">
+                <button onClick={() => { addImage(); setMobileMenuOpen(false); }} className="mobile-menu-button">
+                  <MdImage /> Add Image
+                </button>
+              </div>
+            </div>
+
+            <div className="mobile-menu-section">
+              <div className="mobile-menu-buttons">
+                <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="mobile-menu-button logout-mobile">
+                  <MdLogout /> Logout
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <EditorContent className='editor-div' editor={editor} />
+      {showRenameModal && (
+        <RenameModal
+          currentTitle={currentTitle}
+          onRename={handleRenameAndSave}
+          onCancel={() => setShowRenameModal(false)}
+        />
+      )}
     </>
   )
 }
 
 export default Tiptap
-
-
-
-
-// <button
-//             onClick={() => editor.chain().focus().toggleBulletList().run()}
-//             className={editor.isActive('bulletList') ? 'is-active' : ''}
-//           >
-//             Toggle bullet list
-//           </button>
-//           <button
-//             onClick={() => editor.chain().focus().splitListItem('listItem').run()}
-//             className={editor.isActive('bulletList') ? 'is-active' : ''}
-//           >
-//             Split list item
-//           </button>
-//           {/* <button
-//             onClick={() => editor.chain().focus().sinkListItem('listItem').run()}
-//             disabled={!editor.can().sinkListItem('listItem')}
-//           >
-//             Sink list item
-//           </button> */}
-//           <button
-//             onClick={() => editor.chain().focus().liftListItem('listItem').run()}
-//             className={editor.isActive('bulletList') ? 'is-active' : ''}
-//           >
-//             Lift list item
-//           </button>
-
-//           <button
-//             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-//             className={editor.isActive('orderedList') ? 'is-active' : ''}
-//           >
-//             Toggle ordered list
-//           </button>
-//           <button
-//             onClick={() => editor.chain().focus().splitListItem('listItem').run()}
-//             className={editor.isActive('orderedList') ? 'is-active' : ''}
-//           >
-//             Split list item
-//           </button>

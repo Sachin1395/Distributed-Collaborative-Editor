@@ -50,6 +50,15 @@ export default function Auth() {
 
   return (
     <div className="auth-container">
+      {/* Back Button */}
+      <button 
+        className="back-button" 
+        onClick={() => navigate('/')}
+        aria-label="Back to home"
+      >
+        ← Back to Home
+      </button>
+
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-icon">🔒</div>
@@ -105,6 +114,7 @@ export default function Auth() {
               onClick={handleLogin}
               disabled={loading}
               className="btn btn-primary"
+              type="submit"
             >
               {loading ? <span className="spinner"></span> : "Sign In"}
             </button>
@@ -113,6 +123,7 @@ export default function Auth() {
               onClick={handleSignUp}
               disabled={loading}
               className="btn btn-secondary"
+              type="button"
             >
               Create Account
             </button>
