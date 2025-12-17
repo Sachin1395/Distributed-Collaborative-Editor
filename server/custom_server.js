@@ -61,7 +61,7 @@ import express from "express"
 import { register, activeConnectionsGauge } from "./metrics.js"
 
 const {
-  HOCUSPOCUS_PORT = 1234,
+  HOCUSPOCUS_PORT,
   REDIS_URL,
   METRICS_PORT = 4000,
   ALLOWED_ORIGINS = "",
