@@ -506,3 +506,429 @@
     font-size: 0.8rem;
   }
 }
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+.section-icon {
+  flex-shrink: 0;
+  color: #000000;
+}
+
+.inline-icon {
+  display: inline;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}
+
+.document-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.empty-state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+}
+
+/* Document Menu Dropdown */
+.document-menu {
+  position: relative;
+}
+
+.document-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  min-width: 160px;
+  z-index: 100;
+  animation: dropdownSlide 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.menu-item:hover {
+  background: #f8f9fa;
+  color: #1a1a1a;
+}
+
+.menu-item svg {
+  flex-shrink: 0;
+}
+
+.menu-item.delete {
+  color: #dc3545;
+}
+
+.menu-item.delete:hover {
+  background: #fff5f5;
+  color: #c92a2a;
+}
+
+.menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menu-item.disabled:hover {
+  background: transparent;
+  color: #495057;
+}
+
+/* Rename Modal */
+.rename-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.rename-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f1f3f5;
+  overflow: hidden;
+}
+
+.rename-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.rename-modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.rename-modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.rename-modal-close:hover {
+  background: #f8f9fa;
+  color: #1a1a1a;
+}
+
+.rename-modal-content {
+  padding: 1.5rem 2rem 2rem;
+}
+
+.rename-input-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.rename-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.rename-input:focus {
+  outline: none;
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+}
+
+.rename-input:disabled {
+  background: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rename-char-count {
+  position: absolute;
+  right: 1rem;
+  bottom: -1.5rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.rename-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.rename-btn-cancel,
+.rename-btn-save {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+
+.rename-btn-cancel {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.rename-btn-cancel:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #1a1a1a;
+}
+
+.rename-btn-save {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+}
+
+.rename-btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ee5a6f 0%, #d94d5f 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.rename-btn-save:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.rename-btn-cancel:disabled,
+.rename-btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Delete Modal */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.delete-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f1f3f5;
+  overflow: hidden;
+}
+
+.delete-modal-header {
+  padding: 2rem 2rem 1rem;
+  text-align: center;
+}
+
+.delete-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+}
+
+.delete-modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.delete-modal-content {
+  padding: 0 2rem 1.5rem;
+  text-align: center;
+}
+
+.delete-modal-content p {
+  margin: 0 0 0.75rem 0;
+  color: #495057;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.delete-modal-content strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.delete-warning {
+  color: #dc3545 !important;
+  font-weight: 500;
+  font-size: 0.9rem !important;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0 2rem 2rem;
+}
+
+.delete-btn-cancel,
+.delete-btn-confirm {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+}
+
+.delete-btn-cancel {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.delete-btn-cancel:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #1a1a1a;
+}
+
+.delete-btn-confirm {
+  background: linear-gradient(135deg, #dc3545 0%, #c92a2a 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+}
+
+.delete-btn-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c92a2a 0%, #b02a37 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.delete-btn-confirm:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.delete-btn-cancel:disabled,
+.delete-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .rename-modal,
+  .delete-modal {
+    width: 95%;
+  }
+
+  .rename-modal-header,
+  .delete-modal-header {
+    padding: 1.25rem 1.5rem 1rem;
+  }
+
+  .rename-modal-content,
+  .delete-modal-content {
+    padding: 1rem 1.5rem;
+  }
+
+  .delete-modal-actions {
+    padding: 0 1.5rem 1.5rem;
+    flex-direction: column;
+  }
+
+  .rename-modal-actions {
+    flex-direction: column;
+  }
+
+  .rename-btn-cancel,
+  .rename-btn-save,
+  .delete-btn-cancel,
+  .delete-btn-confirm {
+    width: 100%;
+  }
+}

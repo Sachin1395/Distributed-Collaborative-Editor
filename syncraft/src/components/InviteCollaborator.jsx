@@ -48,8 +48,20 @@ export default function InviteCollaborator({ documentId }) {
         setMessage({ type: "", text: "" });
       }, 2000);
     } catch (err) {
-      setMessage({ type: "error", text: "Error inviting collaborator: " + err.message });
-    }
+       if (err?.message?.includes("duplicate key value")) {
+    setMessage({
+      type: "success",
+      text: "This user is already a collaborator.",
+    })
+  } else {
+    setMessage({
+      type: "error",
+      text: "Error inviting collaborator: " + err.message,
+    })
+  }
+} finally {
+  setLoading(false)
+}
 
     setLoading(false);
   };

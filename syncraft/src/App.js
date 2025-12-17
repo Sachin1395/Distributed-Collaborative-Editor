@@ -6,6 +6,7 @@ import Login from "./components/login"
 import Documents from "./components/documents"
 import Tiptap from "./components/editor"
 import SyncraftLoader from "./components/Loader"
+import UpdatePassword from "./components/UpdatePassword"
 
 function App() {
   const [session, setSession] = useState(null)
@@ -45,12 +46,12 @@ function App() {
       {/* Protected routes - require authentication */}
       <Route
         path="/my-documents/:userId"
-        element={session ? <Documents /> : <Navigate to="/login" replace />}
+        element={session ? <Documents /> : <Navigate to="/" replace />}
       />
 
       <Route
         path="/documents/:userId/:docId"
-        element={session ? <EditorWrapper user={session.user} /> : <Navigate to="/login" replace />}
+        element={session ? <EditorWrapper user={session.user} /> : <Navigate to="/" replace />}
       />
 
       {/* Catch-all redirect */}
@@ -58,6 +59,8 @@ function App() {
         path="*"
         element={<Navigate to="/" replace />}
       />
+
+      <Route path="/update-password" element={<UpdatePassword />} />
     </Routes>
   )
 }

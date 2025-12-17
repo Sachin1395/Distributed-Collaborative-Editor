@@ -54,21 +54,82 @@
 
 
 // server.js
+import "dotenv/config"
 import { Server } from "@hocuspocus/server"
 import { Redis } from "@hocuspocus/extension-redis"
+import express from "express"
+import { register, activeConnectionsGauge } from "./metrics.js"
+
+const {
+  HOCUSPOCUS_PORT = 1234,
+  REDIS_URL,
+  METRICS_PORT = 4000,
+  ALLOWED_ORIGINS = "",
+  METRICS_TOKEN,
+} = process.env
+
+if (!REDIS_URL) {
+  throw new Error("❌ REDIS_URL not set")
+}
+
+const allowedOrigins = ALLOWED_ORIGINS
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean)
 
 const server = new Server({
-  port: 1234,
+  port: Number(HOCUSPOCUS_PORT),
+
   extensions: [
     new Redis({
-      url: 'rediss://default:AScwAAIncDJlOGU5M2IzYTkxODk0OTA5YmM1OWU5MDhjMjRiMDZhMHAyMTAwMzI@on-shrew-10032.upstash.io:6379',  // <--- Use the full URL here
-      // You don't need host, port, username, password, tls if using the URL
+      url: REDIS_URL,
     }),
   ],
+
+  async onConnect(data) {
+    const origin = data.request.headers.origin
+
+    if (
+      allowedOrigins.length &&
+      origin &&
+      !allowedOrigins.includes(origin)
+    ) {
+      throw new Error("❌ Origin not allowed")
+    }
+
+    activeConnectionsGauge.inc()
+  },
+
+  async onDisconnect() {
+    activeConnectionsGauge.dec()
+  },
 })
 
 server.listen()
-console.log("🚀 Hocuspocus server with Upstash Redis running at ws://localhost:1234")
+console.log(
+  `🚀 Hocuspocus running at ws://localhost:${HOCUSPOCUS_PORT}`
+)
+
+const app = express()
+
+app.get("/metrics", async (req, res) => {
+  const auth = req.headers.authorization
+
+  if (!METRICS_TOKEN || auth !== `Bearer ${METRICS_TOKEN}`) {
+    return res.status(401).send("Unauthorized")
+  }
+
+  res.set("Content-Type", register.contentType)
+  res.end(await register.metrics())
+})
+
+app.listen(METRICS_PORT, () => {
+  console.log(
+    `📊 Metrics at http://localhost:${METRICS_PORT}/metrics`
+  )
+})
+
+
 
 
 

@@ -508,3 +508,66 @@
     padding: 0.5rem 2rem;
   }
 }
+/* Table Resize Handle Styles - REQUIRED for resizable columns */
+.ProseMirror {
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
+  }
+}
+
+.column-resize-handle {
+  background-color: #adf;
+  bottom: -2px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+  z-index: 20;
+}
+
+/* Table Styles */
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+td, th {
+  min-width: 1em;
+  border: 2px solid #ced4da;
+  padding: 0.5rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #f1f3f5;
+}
+
+.selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; 
+  right: 0; 
+  top: 0; 
+  bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+}
+
+/* Make sure colgroup is styled properly */
+colgroup {
+  display: table-column-group;
+}
+
+col {
+  display: table-column;
+}
