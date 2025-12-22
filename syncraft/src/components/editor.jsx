@@ -16,7 +16,7 @@ import CodeBlock from '@tiptap/extension-code-block'
 import RenameModal from './RenameModal'
 import {
   MdMenu, MdClose, MdSave, MdLogout, MdDownload, MdImage, MdHistory, MdUndo,
-  MdRedo
+  MdRedo, MdHome
 } from 'react-icons/md'
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { MdFormatBold, MdFormatItalic, MdFormatUnderlined } from 'react-icons/md'
@@ -43,7 +43,8 @@ import { IndexeddbPersistence } from "y-indexeddb";
 import SaveVersionModal from './SaveVersionModal';
 import TableMenuDropdown from './TableMenuDropdown'
 import VersionHistoryModal from "./VersionHistoryModal";
-
+import AlertToast from './AlertToast'
+import './AlertToast.css'
 
 // ✅ Move outside component to prevent recreation
 function stringToColor(str) {
@@ -75,6 +76,18 @@ const Tiptap = ({ docId, user }) => {
   const [isLoadingVersions, setIsLoadingVersions] = useState(false)
   const [showSaveVersionModal, setShowSaveVersionModal] = useState(false);
   const [currentFont, setCurrentFont] = useState('default')
+  const [alerts, setAlerts] = useState([])
+
+  // Helper function to show alerts
+  const showAlert = (message, type = "success", duration = 3000) => {
+    const id = Date.now()
+    setAlerts(prev => [...prev, { id, message, type, duration }])
+  }
+
+  // Function to remove an alert
+  const removeAlert = (id) => {
+    setAlerts(prev => prev.filter(alert => alert.id !== id))
+  }
 
 
   // ✅ NEW STATE VARIABLES FOR BETTER RECONNECTION HANDLING
@@ -86,7 +99,7 @@ const Tiptap = ({ docId, user }) => {
   const ydocRef = useRef(null)
   const currentDocIdRef = useRef(null)
   const [providerSynced, setProviderSynced] = useState(false)
-  
+
 
 
   // ✅ Create provider only once per docId using refs
@@ -106,7 +119,7 @@ const Tiptap = ({ docId, user }) => {
     currentDocIdRef.current = docId
     ydocRef.current = new Y.Doc()
 
-    
+
 
     // ✅ Persist Y.Doc to IndexedDB for offline support
     if (typeof window !== "undefined") {
@@ -145,7 +158,7 @@ const Tiptap = ({ docId, user }) => {
   const ydoc = ydocRef.current
   const provider = providerRef.current
 
-  
+
   // ✅ Wait for provider to sync before initializing editor
   useEffect(() => {
     if (!provider) return
@@ -191,7 +204,7 @@ const Tiptap = ({ docId, user }) => {
         ydocRef.current.destroy()
         ydocRef.current = null
       }
-      
+
 
       currentDocIdRef.current = null
     }
@@ -222,7 +235,7 @@ const Tiptap = ({ docId, user }) => {
           }
           Y.applyUpdate(ydoc, update)
           console.log("Loaded saved content into Y.Doc")
-          
+
         } catch (err) {
           console.error("Error decoding Y.Doc:", err)
         }
@@ -387,9 +400,9 @@ const Tiptap = ({ docId, user }) => {
 
       if (error) {
         console.error("Error saving document:", error)
-        alert("Failed to save document.")
+        showAlert("Failed to save document.", "error")
       } else {
-        alert("✅ Save successful")
+        showAlert("Save successful", "success")
         console.log("✅ Document saved to Supabase")
         await saveSnapshot(docId, ydoc, {
           isAutoSave: true,
@@ -455,7 +468,7 @@ const Tiptap = ({ docId, user }) => {
 
       if (error) {
         console.error("Error loading versions:", error)
-        alert("Failed to load version history.")
+        showAlert("Failed to load version history.", "error")
         return
       }
 
@@ -489,7 +502,7 @@ const Tiptap = ({ docId, user }) => {
       }
 
       if (!data?.snapshot) {
-        alert("No snapshot data found.")
+        showAlert("No snapshot data found.", "error")
         return
       }
 
@@ -537,11 +550,11 @@ const Tiptap = ({ docId, user }) => {
         console.warn("Restored in editor, but failed to persist main document:", persistErr)
       }
 
-      alert("✅ Document restored from selected version")
+      showAlert("Document restored from selected version", "success")
       setShowHistory(false)
     } catch (err) {
       console.error("Unexpected error restoring version:", err)
-      alert("Failed to restore version.")
+      showAlert("Failed to restore version.", "error")
     }
   }
 
@@ -572,7 +585,7 @@ const Tiptap = ({ docId, user }) => {
         throw contentError
       }
 
-      alert("✅ Document renamed and saved successfully")
+      showAlert("✅ Document renamed and saved successfully", "success")
       console.log("✅ Document saved to Supabase")
 
       setShowRenameModal(false)
@@ -756,24 +769,34 @@ const Tiptap = ({ docId, user }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    
+
   }
 
   // ✅ Show full loader only on true initial load
   if (isInitialLoad && (!editor || !user?.email || !providerSynced)) {
     return <SyncraftLoader message='Craft in Progress'></SyncraftLoader>
   }
-  
+
 
   const handleUndo = () => {
-  if (!editor) return
-  editor.chain().focus().undo().run()
-}
+    if (!editor) return
+    editor.chain().focus().undo().run()
+  }
 
-const handleRedo = () => {
-  if (!editor) return
-  editor.chain().focus().redo().run()
-}
+  const handleRedo = () => {
+    if (!editor) return
+    editor.chain().focus().redo().run()
+  }
+
+  const handleGoHome = () => {
+    const confirmLeave = window.confirm(
+      "Are you sure you want to leave? Make sure you've saved your document."
+    )
+
+    if (confirmLeave) {
+      navigate("/")
+    }
+  }
   return (
     <>
       {/* ✅ RECONNECTION BANNER */}
@@ -798,6 +821,15 @@ const handleRedo = () => {
       <div className="control-group">
         {/* Desktop Toolbar */}
         <div className="toolbar desktop-toolbar">
+          <div className="group">
+            <button
+              onClick={handleGoHome}
+              className="icon-button home-button"
+              title="Go to Home"
+            >
+              <MdHome />
+            </button>
+          </div>
           {(isOwner || isEditor) && (
             <div className="group">
               <button
@@ -1155,7 +1187,17 @@ const handleRedo = () => {
           onClose={() => setShowHistory(false)}
         />
       )}
-
+      <div className="alert-container">
+        {alerts.map(alert => (
+          <AlertToast
+            key={alert.id}
+            message={alert.message}
+            type={alert.type}
+            duration={alert.duration}
+            onClose={() => removeAlert(alert.id)}
+          />
+        ))}
+      </div>
 
     </>
   )
