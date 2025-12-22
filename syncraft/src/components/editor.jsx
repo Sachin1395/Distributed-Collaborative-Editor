@@ -130,10 +130,12 @@ const Tiptap = ({ docId, user }) => {
       })
     }
 
+    const WS_URL = process.env.REACT_APP_WS_URL || "ws://localhost:1234"
+
 
     // ✅ ENHANCED PROVIDER WITH CONNECTION PRESERVATION
     providerRef.current = new HocuspocusProvider({
-      url: "ws://localhost:1234",
+      url: WS_URL,
       name: docId,
       document: ydocRef.current,
       preserveConnection: true,
