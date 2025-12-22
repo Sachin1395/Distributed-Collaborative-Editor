@@ -143,13 +143,14 @@ import express from "express"
 import { register, activeConnectionsGauge } from "./metrics.js"
 
 const {
-  HOCUSPOCUS_PORT = 1234,
+  PORT,
   REDIS_URL,
   METRICS_PORT = 4000,
   ALLOWED_ORIGINS = "",
   METRICS_TOKEN,
 } = process.env
 
+const HOCUSPOCUS_PORT = PORT || 1234
 console.log("REDIS_URL =", REDIS_URL)
 
 if (!REDIS_URL) {
