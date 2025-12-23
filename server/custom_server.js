@@ -133,39 +133,48 @@
 // })
 
 
-import "dotenv/config"
-import express from "express"
-import cors from "cors"
-import http from "http"
 
-import { Server as HocuspocusServer } from "@hocuspocus/server"
+
+import "dotenv/config"
+import { Server } from "@hocuspocus/server"
 import { Redis as HocusRedis } from "@hocuspocus/extension-redis"
 import Redis from "ioredis"
-
+import express from "express"
 import { register, activeConnectionsGauge } from "./metrics.js"
 
-const PORT = process.env.PORT
-const REDIS_URL = process.env.REDIS_URL
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || ""
-const METRICS_TOKEN = process.env.METRICS_TOKEN
+const {
+  PORT,
+  REDIS_URL,
+  METRICS_PORT = 4000,
+  ALLOWED_ORIGINS = "",
+  METRICS_TOKEN,
+} = process.env
 
-if (!PORT) throw new Error("❌ Render PORT not provided")
-if (!REDIS_URL) throw new Error("❌ REDIS_URL not set")
+const HOCUSPOCUS_PORT = PORT || 1234
+console.log("REDIS_URL =", REDIS_URL)
+
+if (!REDIS_URL) {
+  throw new Error("❌ REDIS_URL not set")
+}
 
 // ─────────────────────────────────────────────
-// REDIS
+// ✅ CREATE REDIS CLIENT YOURSELF (CRITICAL)
 // ─────────────────────────────────────────────
 const redis = new Redis(REDIS_URL, {
-  tls: {},
-  enableReadyCheck: false,
+  tls: {},                // ✅ enforced
+  enableReadyCheck: false // ✅ required for Upstash
 })
 
 redis.on("connect", () => {
   console.log("✅ Connected to Upstash Redis")
 })
 
+redis.on("error", err => {
+  console.error("❌ Redis error:", err)
+})
+
 // ─────────────────────────────────────────────
-// ORIGINS
+// ORIGIN SETUP
 // ─────────────────────────────────────────────
 const allowedOrigins = ALLOWED_ORIGINS
   .split(",")
@@ -173,69 +182,28 @@ const allowedOrigins = ALLOWED_ORIGINS
   .filter(Boolean)
 
 // ─────────────────────────────────────────────
-// EXPRESS (MAIN SERVER)
+// HOCUSPOCUS SERVER
 // ─────────────────────────────────────────────
-const app = express()
-
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true)
-    if (allowedOrigins.includes(origin)) return cb(null, true)
-    return cb(new Error("CORS blocked"))
-  },
-  credentials: true,
-}))
-
-app.use(express.json())
-
-// Health endpoint (Render expects this)
-app.get("/", (req, res) => {
-  res.json({
-    status: "ok",
-    service: "SyncDraft Backend",
-  })
-})
-
-// Metrics (same port)
-app.get("/metrics", async (req, res) => {
-  const auth = req.headers.authorization
-  if (METRICS_TOKEN && auth !== `Bearer ${METRICS_TOKEN}`) {
-    return res.status(401).send("Unauthorized")
-  }
-
-  res.set("Content-Type", register.contentType)
-  res.end(await register.metrics())
-})
-
-// ─────────────────────────────────────────────
-// SINGLE HTTP SERVER (RENDER DEFAULT PORT)
-// ─────────────────────────────────────────────
-const httpServer = http.createServer(app)
-
-httpServer.listen(PORT, () => {
-  console.log(`🌐 Server running on Render port ${PORT}`)
-})
-
-// ─────────────────────────────────────────────
-// HOCUSPOCUS (ATTACHED TO SAME SERVER)
-// ─────────────────────────────────────────────
-new HocuspocusServer({
-  server: httpServer,
+const server = new Server({
+  port: Number(HOCUSPOCUS_PORT),
 
   extensions: [
-    new HocusRedis({ redis }),
+    new HocusRedis({
+      redis, // 🔥 inject the client
+    }),
   ],
 
-  cors: {
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true)
-      if (allowedOrigins.includes(origin)) return cb(null, true)
-      return cb(new Error("WS origin blocked"))
-    },
-    credentials: true,
-  },
+  async onConnect({ request }) {
+    const origin = request.headers.origin
 
-  async onConnect() {
+    if (
+      allowedOrigins.length &&
+      origin &&
+      !allowedOrigins.includes(origin)
+    ) {
+      throw new Error("Origin not allowed")
+    }
+
     activeConnectionsGauge.inc()
   },
 
@@ -244,4 +212,26 @@ new HocuspocusServer({
   },
 })
 
-console.log("🚀 Hocuspocus attached to Render server")
+server.listen()
+
+console.log(`🚀 Hocuspocus running at ws://0.0.0.0:${HOCUSPOCUS_PORT}`)
+
+// ─────────────────────────────────────────────
+// METRICS
+// ─────────────────────────────────────────────
+const app = express()
+
+app.get("/metrics", async (req, res) => {
+  const auth = req.headers.authorization
+
+  if (METRICS_TOKEN && auth !== `Bearer ${METRICS_TOKEN}`) {
+    return res.status(401).send("Unauthorized")
+  }
+
+  res.set("Content-Type", register.contentType)
+  res.end(await register.metrics())
+})
+
+app.listen(METRICS_PORT, () => {
+  console.log(`📊 Metrics at http://localhost:${METRICS_PORT}/metrics`)
+})
