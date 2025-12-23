@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { supabase } from "./components/supabase_client"
+
 import LandingPage from "./components/LandingPage"
 import Login from "./components/login"
 import Documents from "./components/documents"
@@ -8,22 +9,31 @@ import Tiptap from "./components/editor"
 import SyncraftLoader from "./components/Loader"
 import UpdatePassword from "./components/UpdatePassword"
 
+/* ─────────────────────────────────────────────
+   Wake up Render backend (cold start fix)
+───────────────────────────────────────────── */
+const wakeUpBackend = async () => {
+  try {
+    await fetch("https://syncdraft-distributed-collaborative.onrender.com/", {
+      method: "GET",
+      mode: "cors",
+    })
+    console.log("Backend awake")
+  } catch (err) {
+    console.error("Backend wake-up failed", err)
+  }
+}
+
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const init = async () => {
-      try {
-        // 🔹 Request your backend BEFORE screen loads
-        const res = await fetch("https://syncdraft-distributed-collaborative.onrender.com/")
-        const text = await res.text()
-        console.log("Hocuspocus server response:", text)
-      } catch (err) {
-        console.error("Backend request failed:", err)
-      }
+      //  Wake backend early
+      wakeUpBackend()
 
-      // 🔹 Supabase session
+      //  Get initial session
       const { data: { session } } = await supabase.auth.getSession()
       setSession(session)
       setLoading(false)
@@ -31,27 +41,11 @@ function App() {
 
     init()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+    //  Listen to auth changes
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session)
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session)
-      }
-    )
+      })
 
     return () => subscription.unsubscribe()
   }, [])
@@ -60,40 +54,54 @@ function App() {
 
   return (
     <Routes>
-      {/* Landing page - public route */}
+      {/* Public landing page */}
       <Route
         path="/"
-        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <LandingPage />}
+        element={
+          session
+            ? <Navigate to={`/my-documents/${session.user.id}`} replace />
+            : <LandingPage />
+        }
       />
 
-      {/* Login/Signup page */}
+      {/* Login */}
       <Route
         path="/login"
-        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <Login />}
+        element={
+          session
+            ? <Navigate to={`/my-documents/${session.user.id}`} replace />
+            : <Login />
+        }
       />
 
-      {/* Protected routes - require authentication */}
+      {/* Documents list (protected) */}
       <Route
         path="/my-documents/:userId"
         element={session ? <Documents /> : <Navigate to="/" replace />}
       />
 
+      {/* Editor (protected) */}
       <Route
         path="/documents/:userId/:docId"
-        element={session ? <EditorWrapper user={session.user} /> : <Navigate to="/" replace />}
+        element={
+          session
+            ? <EditorWrapper user={session.user} />
+            : <Navigate to="/" replace />
+        }
       />
 
-      {/* Catch-all redirect */}
-      <Route
-        path="*"
-        element={<Navigate to="/" replace />}
-      />
-
+      {/* Update password */}
       <Route path="/update-password" element={<UpdatePassword />} />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
 
+/* ─────────────────────────────────────────────
+   Editor Wrapper
+───────────────────────────────────────────── */
 function EditorWrapper({ user }) {
   const { docId } = useParams()
   if (!user) return <SyncraftLoader message="Loading Editor" />
