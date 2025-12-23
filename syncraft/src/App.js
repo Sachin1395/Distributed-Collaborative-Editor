@@ -13,6 +13,35 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const init = async () => {
+      try {
+        // 🔹 Request your backend BEFORE screen loads
+        const res = await fetch("https://syncdraft-distributed-collaborative.onrender.com/")
+        const text = await res.text()
+        console.log("Hocuspocus server response:", text)
+      } catch (err) {
+        console.error("Backend request failed:", err)
+      }
+
+      // 🔹 Supabase session
+      const { data: { session } } = await supabase.auth.getSession()
+      setSession(session)
+      setLoading(false)
+    }
+
+    init()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
@@ -32,15 +61,15 @@ function App() {
   return (
     <Routes>
       {/* Landing page - public route */}
-      <Route 
-        path="/" 
-        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <LandingPage />} 
+      <Route
+        path="/"
+        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <LandingPage />}
       />
 
       {/* Login/Signup page */}
-      <Route 
-        path="/login" 
-        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <Login />} 
+      <Route
+        path="/login"
+        element={session ? <Navigate to={`/my-documents/${session.user.id}`} replace /> : <Login />}
       />
 
       {/* Protected routes - require authentication */}
