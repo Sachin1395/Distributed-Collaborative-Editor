@@ -8,6 +8,7 @@ import Documents from "./components/documents"
 import Tiptap from "./components/editor"
 import SyncraftLoader from "./components/Loader"
 import UpdatePassword from "./components/UpdatePassword"
+import DemoEditor from "./components/demo_editor.jsx"
 
 /* ─────────────────────────────────────────────
    Wake up Render backend (cold start fix)
@@ -92,6 +93,8 @@ function App() {
 
       {/* Update password */}
       <Route path="/update-password" element={<UpdatePassword />} />
+
+      <Route path="/demo" element={<DemoEditor />} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
