@@ -11,6 +11,8 @@ function RenameModal({ document, onClose, onRename }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRef = useRef(null)
 
+
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -125,25 +127,25 @@ function DeleteModal({ document, onClose, onDelete }) {
 }
 
 // Document Menu Dropdown
-function DocumentMenu({ doc, onRename, onDelete, isOwner = true })  {
+function DocumentMenu({ doc, onRename, onDelete, isOwner = true }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
 
   useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (menuRef.current && !menuRef.current.contains(e.target)) {
-      setIsOpen(false)
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsOpen(false)
+      }
     }
-  }
 
-  if (isOpen) {
-    window.document.addEventListener("mousedown", handleClickOutside)
-  }
+    if (isOpen) {
+      window.document.addEventListener("mousedown", handleClickOutside)
+    }
 
-  return () => {
-    window.document.removeEventListener("mousedown", handleClickOutside)
-  }
-}, [isOpen])
+    return () => {
+      window.document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isOpen])
 
 
   return (
@@ -205,6 +207,13 @@ export default function Documents() {
   const [renameDoc, setRenameDoc] = useState(null)
   const [deleteDoc, setDeleteDoc] = useState(null)
   const navigate = useNavigate()
+  const [ready, setReady] = useState(false)
+
+
+  useEffect(() => {
+    requestAnimationFrame(() => setReady(true))
+  }, [])
+
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -258,7 +267,7 @@ export default function Documents() {
               .order("created_at", { ascending: false })
 
             if (colDocsError) throw colDocsError
-            
+
             setColDocs(colDocsData || [])
           }
         }
@@ -303,7 +312,7 @@ export default function Documents() {
       if (error) throw error
 
       // Update local state
-      setDocs(docs.map(doc => 
+      setDocs(docs.map(doc =>
         doc.id === docId ? { ...doc, title: newTitle } : doc
       ))
 
@@ -347,16 +356,17 @@ export default function Documents() {
     const now = new Date()
     const diffTime = Math.abs(now - date)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 1) return "Today"
     if (diffDays === 2) return "Yesterday"
     if (diffDays <= 7) return `${diffDays - 1} days ago`
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
-  if (loading) {
+  if (loading || !ready) {
     return <SyncraftLoader message="Loading Documents" />
   }
+
 
   if (error) {
     return (
@@ -409,12 +419,12 @@ export default function Documents() {
             </div>
             <span className="document-count">{docs.length} document{docs.length !== 1 ? 's' : ''}</span>
           </div>
-          
+
           {docs.length > 0 ? (
             <ul className="documents-list">
               {docs.map((doc) => (
                 <li key={doc.id}>
-                  <div 
+                  <div
                     className="document-card"
                     onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
                   >
@@ -458,12 +468,12 @@ export default function Documents() {
             </div>
             <span className="document-count">{colDocs.length} document{colDocs.length !== 1 ? 's' : ''}</span>
           </div>
-          
+
           {colDocs.length > 0 ? (
             <ul className="documents-list">
               {colDocs.map((doc) => (
                 <li key={doc.id}>
-                  <div 
+                  <div
                     className="document-card"
                     onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
                   >
@@ -473,8 +483,8 @@ export default function Documents() {
                       </div>
                       <DocumentMenu
                         document={doc}
-                        onRename={() => {}}
-                        onDelete={() => {}}
+                        onRename={() => { }}
+                        onDelete={() => { }}
                         isOwner={false}
                       />
                     </div>
