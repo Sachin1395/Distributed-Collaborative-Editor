@@ -801,24 +801,7 @@ const Tiptap = ({ docId, user }) => {
   }
   return (
     <>
-      {/* ✅ RECONNECTION BANNER */}
-      {isReconnecting && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          background: '#fbbf24',
-          color: '#92400e',
-          padding: '8px',
-          textAlign: 'center',
-          fontSize: '14px',
-          zIndex: 1000,
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          🔄 Reconnecting to sync server...
-        </div>
-      )}
+      
 
       <div className="control-group">
         {/* Desktop Toolbar */}
