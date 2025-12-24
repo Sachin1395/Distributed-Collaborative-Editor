@@ -1,7 +1,7 @@
 /* --- Google Docs–Inspired Editor Layout --- */
 
 /* Toolbar Container */
-.control-group {
+.control-group-demo {
   position: sticky;
   top: 0;
   z-index: 50;
@@ -481,7 +481,7 @@
   }
 
   /* Adjust control group padding */
-  .control-group {
+  .control-group-demo {
     padding: 0.75rem 1rem;
   }
 }
@@ -504,7 +504,7 @@
 
 /* Desktop large screens */
 @media (min-width: 1441px) {
-  .control-group {
+  .control-group-demo {
     padding: 0.5rem 2rem;
   }
 }
@@ -572,7 +572,7 @@ td, th {
 }
 
 /* Push toolbar down so it doesn't overlap */
-.control-group {
+.control-group-demo {
   margin-top: 40px;
 }
 

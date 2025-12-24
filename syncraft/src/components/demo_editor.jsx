@@ -164,7 +164,7 @@ const navigate = useNavigate()
         🚀 Demo Mode — no login, no saving, changes reset on refresh
       </div>
 
-      <div className="control-group">
+      <div className="control-group-demo">
         {/* Toolbar */}
         <div className="toolbar desktop-toolbar">
 
