@@ -75,7 +75,7 @@ export default function LandingPage() {
             {/* Auth Buttons */}
 
             <div className="auth-buttons">
-              
+
               <button onClick={() => navigate('/demo')} className="demo-button">
                 Try Demo
               </button>
@@ -547,9 +547,10 @@ export default function LandingPage() {
               © 2026 SyncDraft. Built with React, Yjs, TipTap, Supabase, and Redis.
             </p>
             <div className="footer-links">
-              <a href="#" className="footer-link">Privacy Policy</a>
-              <a href="#" className="footer-link">Terms of Service</a>
-              <a href="#" className="footer-link">Cookie Policy</a>
+              <a href="/privacy" className="footer-link">Privacy Policy</a>
+              <a href="/terms" className="footer-link">Terms of Service</a>
+              <a href="/cookies" className="footer-link">Cookie Policy</a>
+
             </div>
           </div>
         </div>

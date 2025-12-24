@@ -9,6 +9,9 @@ import Tiptap from "./components/editor"
 import SyncraftLoader from "./components/Loader"
 import UpdatePassword from "./components/UpdatePassword"
 import DemoEditor from "./components/demo_editor.jsx"
+import PrivacyPolicy from "./components/PrivacyPolicy"
+import TermsOfService from "./components/TermsOfService"
+import CookiePolicy from "./components/CookiePolicy"
 
 /* ─────────────────────────────────────────────
    Wake up Render backend (cold start fix)
@@ -32,8 +35,8 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-  document.body.style.visibility = "visible";
-}, []);
+    document.body.style.visibility = "visible";
+  }, []);
 
 
   useEffect(() => {
@@ -102,6 +105,11 @@ function App() {
       <Route path="/update-password" element={<UpdatePassword />} />
 
       <Route path="/demo" element={<DemoEditor />} />
+
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/cookies" element={<CookiePolicy />} />
+
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
