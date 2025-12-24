@@ -544,6 +544,32 @@ td, th {
   box-sizing: border-box;
   position: relative;
 }
+.demo-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 40px;
+  line-height: 40px;
+
+  background: linear-gradient(
+    90deg,
+    #eef2ff,
+    #e0e7ff,
+    #eef2ff
+  );
+
+  color: #1e3a8a;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+
+  border-bottom: 1px solid #c7d2fe;
+  z-index: 1000;
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
 
 /* Push toolbar down so it doesn't overlap */
 .control-group {

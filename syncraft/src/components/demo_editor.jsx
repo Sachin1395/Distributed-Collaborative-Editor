@@ -30,7 +30,7 @@ import {
 import * as Y from "yjs"
 import { HocuspocusProvider } from "@hocuspocus/provider"
 
-import "./editor.css"
+import "./demo.css"
 
 
 // ─────────────────────────────────────────────
