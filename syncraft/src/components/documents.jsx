@@ -393,7 +393,7 @@ export default function Documents() {
           <p className="welcome-subtitle">Here are all your documents</p>
         </header>
 
-        <section className="documents-section fade-in">
+        <section className="documents-section">
           <div className="section-header">
             <div className="section-title-wrapper">
               <FileText size={24} className="section-icon" />
@@ -445,7 +445,7 @@ export default function Documents() {
           )}
         </section>
 
-        <section className="documents-section fade-in">
+        <section className="documents-section">
           <div className="section-header">
             <div className="section-title-wrapper">
               <Handshake size={24} className="section-icon" />

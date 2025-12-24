@@ -157,112 +157,115 @@ const navigate = useNavigate()
 
   if (!editor) return null
 
-  return (
-    <>
-      {/* Demo Banner */}
-      <div className="demo-banner">
-        🚀 Demo Mode — no login, no saving, changes reset on refresh
-      </div>
+  // DemoEditor.jsx (UPDATED CLASS NAMES ONLY)
 
-      <div className="control-group-demo">
-        {/* Toolbar */}
-        <div className="toolbar desktop-toolbar">
+return (
+  <>
+    {/* Demo Banner */}
+    <div className="demo-banner">
+      🚀 Demo Mode — no login, no saving, changes reset on refresh
+    </div>
 
-            <div className="group">
-            <button
-              onClick={() => navigate('/')}
-              className="icon-button home-button"
-              title="Go to Home"
-            ><MdHome />
-            </button>
-          </div>
+    <div className="demo-control-group">
+      <div className="demo-toolbar demo-desktop-toolbar">
 
-            
-          <div className="group">
-            <button onClick={() => editor.chain().focus().undo().run()}>
-              <MdUndo />
-            </button>
-            <button onClick={() => editor.chain().focus().redo().run()}>
-              <MdRedo />
-            </button>
-          </div>
-
-          <div className="group">
-            <button onClick={() => editor.chain().focus().toggleBold().run()}>
-              <MdFormatBold />
-            </button>
-            <button onClick={() => editor.chain().focus().toggleItalic().run()}>
-              <MdFormatItalic />
-            </button>
-            <button onClick={() => editor.chain().focus().toggleUnderline().run()}>
-              <MdFormatUnderlined />
-            </button>
-          </div>
-
-          <div className="group">
-            <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
-              <AiOutlineUnorderedList />
-            </button>
-            <button onClick={() => editor.chain().focus().toggleOrderedList().run()}>
-              <AiOutlineOrderedList />
-            </button>
-          </div>
-
-          <div className="group">
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-              <MdLooksOne />
-            </button>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-              <MdLooksTwo />
-            </button>
-            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
-              <MdLooks3 />
-            </button>
-          </div>
-
-          <div className="group">
-            <button onClick={() => editor.chain().focus().setTextAlign("left").run()}>
-              <MdFormatAlignLeft />
-            </button>
-            <button onClick={() => editor.chain().focus().setTextAlign("center").run()}>
-              <MdFormatAlignCenter />
-            </button>
-            <button onClick={() => editor.chain().focus().setTextAlign("right").run()}>
-              <MdFormatAlignRight />
-            </button>
-          </div>
-
-          <div className="group">
-            <button onClick={addImage}>
-              <MdImage />
-            </button>
-          </div>
-
-          <div className="group">
-            <button
-              onClick={() =>
-                editor
-                  .chain()
-                  .focus()
-                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-                  .run()
-              }
-            >
-              Table
-            </button>
-          </div>
-
-          <div className="group" style={{ marginLeft: "auto" }}>
-            <button onClick={resetDemo}>
-              Reset Demo
-            </button>
-          </div>
+        <div className="demo-group">
+          <button
+            onClick={() => navigate('/')}
+            className="demo-icon-button demo-home-button"
+            title="Go to Home"
+          >
+            <MdHome />
+          </button>
         </div>
-      </div>
 
-      <EditorContent className="editor-div" editor={editor} />
-    </>
-  )
+        <div className="demo-group">
+          <button onClick={() => editor.chain().focus().undo().run()}>
+            <MdUndo />
+          </button>
+          <button onClick={() => editor.chain().focus().redo().run()}>
+            <MdRedo />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button onClick={() => editor.chain().focus().toggleBold().run()}>
+            <MdFormatBold />
+          </button>
+          <button onClick={() => editor.chain().focus().toggleItalic().run()}>
+            <MdFormatItalic />
+          </button>
+          <button onClick={() => editor.chain().focus().toggleUnderline().run()}>
+            <MdFormatUnderlined />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button onClick={() => editor.chain().focus().toggleBulletList().run()}>
+            <AiOutlineUnorderedList />
+          </button>
+          <button onClick={() => editor.chain().focus().toggleOrderedList().run()}>
+            <AiOutlineOrderedList />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+            <MdLooksOne />
+          </button>
+          <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+            <MdLooksTwo />
+          </button>
+          <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+            <MdLooks3 />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button onClick={() => editor.chain().focus().setTextAlign("left").run()}>
+            <MdFormatAlignLeft />
+          </button>
+          <button onClick={() => editor.chain().focus().setTextAlign("center").run()}>
+            <MdFormatAlignCenter />
+          </button>
+          <button onClick={() => editor.chain().focus().setTextAlign("right").run()}>
+            <MdFormatAlignRight />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button onClick={addImage}>
+            <MdImage />
+          </button>
+        </div>
+
+        <div className="demo-group">
+          <button
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                .run()
+            }
+          >
+            Table
+          </button>
+        </div>
+
+        <div className="demo-group" style={{ marginLeft: "auto" }}>
+          <button onClick={resetDemo}>Reset Demo</button>
+        </div>
+
+      </div>
+    </div>
+
+    <EditorContent
+      className="demo-editor-container"
+      editor={editor}
+    />
+  </>
+)
 }
 
 export default DemoEditor

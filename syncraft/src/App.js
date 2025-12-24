@@ -25,9 +25,16 @@ const wakeUpBackend = async () => {
   }
 }
 
+
+
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+  document.body.style.visibility = "visible";
+}, []);
+
 
   useEffect(() => {
     const init = async () => {

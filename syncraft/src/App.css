@@ -37,6 +37,5 @@
   }
 }
 
-* {
-  transition: none !important;
-}
+/* Removed global transition disable to allow modal animations */
+/* If you need to disable transitions for specific elements, scope them */
