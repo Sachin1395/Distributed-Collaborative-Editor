@@ -11,8 +11,6 @@ function RenameModal({ document, onClose, onRename }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRef = useRef(null)
 
-
-
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus()
@@ -42,37 +40,30 @@ function RenameModal({ document, onClose, onRename }) {
           <h3>Rename Document</h3>
           <button className="rename-modal-close" onClick={onClose}>×</button>
         </div>
-        <form onSubmit={handleSubmit} className="rename-modal-content">
-          <div className="rename-input-wrapper">
-            <input
-              ref={inputRef}
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Document name"
-              maxLength={100}
-              className="rename-input"
-              disabled={isSubmitting}
-            />
-            <span className="rename-char-count">{newTitle.length}/100</span>
-          </div>
-          <div className="rename-modal-actions">
-            <button
-              type="button"
-              className="rename-btn-cancel"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rename-btn-save"
-              disabled={!newTitle.trim() || isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </button>
+        <form onSubmit={handleSubmit}>
+          <div className="rename-modal-content">
+            <div className="rename-input-wrapper">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Document name"
+                maxLength={100}
+                className="rename-input"
+                disabled={isSubmitting}
+              />
+              <div className="rename-char-count">{newTitle.length}/100</div>
+            </div>
+            <div className="rename-modal-actions">
+              <button type="button" onClick={onClose} className="rename-btn-cancel">
+                Cancel
+              </button>
+              <button type="submit" className="rename-btn-save" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -95,29 +86,19 @@ function DeleteModal({ document, onClose, onDelete }) {
       <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
         <div className="delete-modal-header">
           <div className="delete-icon-wrapper">
-            <Trash2 size={24} />
+            <Trash2 size={32} />
           </div>
           <h3>Delete Document?</h3>
         </div>
         <div className="delete-modal-content">
-          <p>
-            Are you sure you want to delete <strong>"{document?.title || "Untitled Document"}"</strong>?
-          </p>
+          <p>Are you sure you want to delete <strong>"{document?.title || "Untitled Document"}"</strong>?</p>
           <p className="delete-warning">This action cannot be undone.</p>
         </div>
         <div className="delete-modal-actions">
-          <button
-            className="delete-btn-cancel"
-            onClick={onClose}
-            disabled={isDeleting}
-          >
+          <button onClick={onClose} className="delete-btn-cancel">
             Cancel
           </button>
-          <button
-            className="delete-btn-confirm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <button onClick={handleDelete} className="delete-btn-confirm" disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
@@ -147,7 +128,6 @@ function DocumentMenu({ doc, onRename, onDelete, isOwner = true }) {
     }
   }, [isOpen])
 
-
   return (
     <div className="document-menu" ref={menuRef}>
       <button
@@ -159,6 +139,7 @@ function DocumentMenu({ doc, onRename, onDelete, isOwner = true }) {
       >
         <MoreVertical size={18} />
       </button>
+
       {isOpen && (
         <div className="document-menu-dropdown">
           {isOwner && (
@@ -171,7 +152,7 @@ function DocumentMenu({ doc, onRename, onDelete, isOwner = true }) {
               }}
             >
               <Edit2 size={16} />
-              <span>Rename</span>
+              Rename
             </button>
           )}
           {isOwner && (
@@ -184,12 +165,12 @@ function DocumentMenu({ doc, onRename, onDelete, isOwner = true }) {
               }}
             >
               <Trash2 size={16} />
-              <span>Delete</span>
+              Delete
             </button>
           )}
           {!isOwner && (
             <div className="menu-item disabled">
-              <span>No actions available</span>
+              No actions available
             </div>
           )}
         </div>
@@ -206,14 +187,14 @@ export default function Documents() {
   const [error, setError] = useState(null)
   const [renameDoc, setRenameDoc] = useState(null)
   const [deleteDoc, setDeleteDoc] = useState(null)
+  const [cssLoaded, setCssLoaded] = useState(false)
   const navigate = useNavigate()
-  const [ready, setReady] = useState(false)
 
-
+  // Wait for CSS to load
   useEffect(() => {
-    requestAnimationFrame(() => setReady(true))
+    const timer = setTimeout(() => setCssLoaded(true), 50)
+    return () => clearTimeout(timer)
   }, [])
-
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -221,13 +202,9 @@ export default function Documents() {
         setLoading(true)
         setError(null)
 
-        const {
-          data: { user },
-          error: userError
-        } = await supabase.auth.getUser()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
 
         if (userError) throw userError
-
         if (!user) {
           navigate("/")
           return
@@ -267,7 +244,6 @@ export default function Documents() {
               .order("created_at", { ascending: false })
 
             if (colDocsError) throw colDocsError
-
             setColDocs(colDocsData || [])
           }
         }
@@ -315,7 +291,6 @@ export default function Documents() {
       setDocs(docs.map(doc =>
         doc.id === docId ? { ...doc, title: newTitle } : doc
       ))
-
       setRenameDoc(null)
     } catch (err) {
       console.error("Error renaming document:", err)
@@ -360,28 +335,34 @@ export default function Documents() {
     if (diffDays === 1) return "Today"
     if (diffDays === 2) return "Yesterday"
     if (diffDays <= 7) return `${diffDays - 1} days ago`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }
 
-  if (loading || !ready) {
-    return <SyncraftLoader message="Loading Documents" />
+  if (loading || !cssLoaded) {
+    return <SyncraftLoader />
   }
-
 
   if (error) {
     return (
-      <div className="error-container fade-in">
-        <p>Error: {error}</p>
-        <button className="btn btn-primary" onClick={() => window.location.reload()}>
-          Retry
-        </button>
+      <div className="error-container">
+        <div>
+          <h2>Error: {error}</h2>
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>
+            Retry
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="dashboard-wrapper fade-in">
-      <header className="dashboard-navbar">
+    <div className="dashboard-wrapper">
+      <nav className="dashboard-navbar">
         <div className="navbar-content">
           <div className="user-profile">
             <div className="user-avatar">
@@ -392,59 +373,63 @@ export default function Documents() {
               <p>Manage your documents</p>
             </div>
           </div>
+
           <div className="navbar-actions">
             <button className="btn btn-primary" onClick={createDocument}>
-              <Plus size={18} className="btn-icon" />
+              <Plus size={20} className="btn-icon" />
               <span className="btn-text">New Document</span>
             </button>
             <button className="btn btn-secondary" onClick={handleLogout}>
-              <LogOut size={18} className="btn-icon" />
+              <LogOut size={20} className="btn-icon" />
               <span className="btn-text">Logout</span>
             </button>
           </div>
         </div>
-      </header>
+      </nav>
 
       <div className="dashboard-container">
-        <div className="welcome-section">
+        <header className="welcome-section">
           <h1 className="welcome-title">Welcome back! 👋</h1>
           <p className="welcome-subtitle">Here are all your documents</p>
-        </div>
+        </header>
 
-        <div className="documents-section">
+        <section className="documents-section fade-in">
           <div className="section-header">
             <div className="section-title-wrapper">
               <FileText size={24} className="section-icon" />
               <h2>Your Documents</h2>
             </div>
-            <span className="document-count">{docs.length} document{docs.length !== 1 ? 's' : ''}</span>
+            <span className="document-count">
+              {docs.length} document{docs.length !== 1 ? 's' : ''}
+            </span>
           </div>
 
           {docs.length > 0 ? (
-            <ul className="documents-list">
+            <ul className="documents-list" style={{ opacity: cssLoaded ? 1 : 0 }}>
               {docs.map((doc) => (
-                <li key={doc.id}>
-                  <div
-                    className="document-card"
-                    onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
-                  >
-                    <div className="card-header">
-                      <div className="document-icon">
-                        <FileText size={20} />
-                      </div>
-                      <DocumentMenu
-                        document={doc}
-                        onRename={() => setRenameDoc(doc)}
-                        onDelete={() => setDeleteDoc(doc)}
-                        isOwner={true}
-                      />
+                <li
+                  key={doc.id}
+                  className="document-card"
+                  onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
+                >
+                  <div className="card-header">
+                    <div className="document-icon">
+                      <FileText size={24} />
                     </div>
-                    <div className="document-title">
+                    <DocumentMenu
+                      doc={doc}
+                      onRename={() => setRenameDoc(doc)}
+                      onDelete={() => setDeleteDoc(doc)}
+                      isOwner={true}
+                    />
+                  </div>
+                  <div className="card-content">
+                    <h3 className="document-title">
                       {doc.title || "Untitled Document"}
-                    </div>
-                    <div className="document-meta">
+                    </h3>
+                    <p className="document-meta">
                       Created {formatDate(doc.created_at)}
-                    </div>
+                    </p>
                   </div>
                 </li>
               ))}
@@ -452,47 +437,53 @@ export default function Documents() {
           ) : (
             <div className="empty-state">
               <div className="empty-state-icon">
-                <Inbox size={48} strokeWidth={1.5} />
+                <FileText size={48} />
               </div>
-              <p className="empty-state-title">No documents yet</p>
+              <h3 className="empty-state-title">No documents yet</h3>
               <p className="empty-state-subtitle">Create your first document to get started</p>
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="documents-section">
+        <section className="documents-section fade-in">
           <div className="section-header">
             <div className="section-title-wrapper">
-              <Users size={24} className="section-icon" />
+              <Handshake size={24} className="section-icon" />
               <h2>Shared With You</h2>
             </div>
-            <span className="document-count">{colDocs.length} document{colDocs.length !== 1 ? 's' : ''}</span>
+            <span className="document-count">
+              {colDocs.length} document{colDocs.length !== 1 ? 's' : ''}
+            </span>
           </div>
 
           {colDocs.length > 0 ? (
-            <ul className="documents-list">
+            <ul className="documents-list" style={{ opacity: cssLoaded ? 1 : 0 }}>
               {colDocs.map((doc) => (
-                <li key={doc.id}>
-                  <div
-                    className="document-card"
-                    onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
-                  >
-                    <div className="card-header">
-                      <div className="document-icon">
-                        <Handshake size={20} />
-                      </div>
-                      <DocumentMenu
-                        document={doc}
-                        onRename={() => { }}
-                        onDelete={() => { }}
-                        isOwner={false}
-                      />
+                <li
+                  key={doc.id}
+                  className="document-card"
+                  onClick={() => navigate(`/documents/${user.id}/${doc.id}`)}
+                >
+                  <div className="card-header">
+                    <div className="document-icon">
+                      <FileText size={24} />
                     </div>
-                    <div className="document-title">
+                    <DocumentMenu
+                      doc={doc}
+                      onRename={() => { }}
+                      onDelete={() => { }}
+                      isOwner={false}
+                    />
+                  </div>
+                  <div className="card-content">
+                    <h3 className="document-title">
                       {doc.title || "Untitled Document"}
-                    </div>
+                    </h3>
                     <div className="document-footer">
-                      <div className="document-meta">Shared document</div>
+                      <p className="document-meta">
+                        <Users size={14} className="inline-icon" />
+                        Shared document
+                      </p>
                       <span className="collab-badge">Collaborator</span>
                     </div>
                   </div>
@@ -502,13 +493,13 @@ export default function Documents() {
           ) : (
             <div className="empty-state">
               <div className="empty-state-icon">
-                <Users size={48} strokeWidth={1.5} />
+                <Handshake size={48} />
               </div>
-              <p className="empty-state-title">No shared documents</p>
+              <h3 className="empty-state-title">No shared documents</h3>
               <p className="empty-state-subtitle">Documents shared with you will appear here</p>
             </div>
           )}
-        </div>
+        </section>
       </div>
 
       {renameDoc && (

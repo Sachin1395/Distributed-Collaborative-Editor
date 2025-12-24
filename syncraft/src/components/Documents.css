@@ -921,6 +921,11 @@
     flex-direction: column;
   }
 
+  /* Add this at the end of your Documents.css */
+.documents-list {
+  transition: opacity 0.3s ease-in;
+}
+
   .rename-modal-actions {
     flex-direction: column;
   }
