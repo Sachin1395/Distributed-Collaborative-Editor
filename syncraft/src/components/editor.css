@@ -545,10 +545,7 @@ td, th {
   position: relative;
 }
 
-/* Push toolbar down so it doesn't overlap */
-.control-group {
-  margin-top: 40px;
-}
+
 
 th {
   font-weight: bold;
