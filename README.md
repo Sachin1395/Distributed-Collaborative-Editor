@@ -92,6 +92,7 @@ You don’t need to set anything up to try SyncDraft.
 - npm **9+**
 - Redis instance (local or Upstash)
 - Supabase project
+- Updated env vars
 
 ---
 
@@ -99,5 +100,9 @@ You don’t need to set anything up to try SyncDraft.
 ```bash
 git clone https://github.com/your-username/syncdraft.git
 cd syncdraft
+npm start
+
+cd server
+node custom_server
 
 
