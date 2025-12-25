@@ -36,3 +36,68 @@ This project was built to deeply understand how modern collaborative systems wor
 
 ## 🏗 Architecture Overview
 
+
+- **Yjs** manages shared document state and conflict resolution  
+- **Hocuspocus** handles collaborative WebSocket sessions  
+- **Redis** enables horizontal scaling across server instances  
+- **Supabase** provides authentication and persistent metadata  
+
+---
+
+## 🧰 Tech Stack
+
+### Frontend
+- React
+- TipTap
+- Yjs
+
+### Backend
+- Node.js
+- Hocuspocus
+- WebSockets
+- Redis (Upstash)
+
+### Infrastructure
+- Supabase (Auth & Database)
+- Vercel (Frontend hosting)
+- Render (Backend hosting)
+
+---
+
+## 🌍 Deployment
+
+- **Frontend:** Vercel  
+- **Backend:** Render  
+- **Redis:** Upstash  
+- **Authentication & DB:** Supabase  
+
+---
+
+## 🧪 Try It Online
+
+You don’t need to set anything up to try SyncDraft.
+
+👉 **Live Demo:** https://syncdraft.vercel.app/
+
+- Create a document
+- Open it in two tabs or browsers
+- See real-time collaboration in action
+
+---
+
+## ⚡ Quick Start (Local Development)
+
+### Prerequisites
+- Node.js **18+**
+- npm **9+**
+- Redis instance (local or Upstash)
+- Supabase project
+
+---
+
+### Clone the repository
+```bash
+git clone https://github.com/your-username/syncdraft.git
+cd syncdraft
+
+
