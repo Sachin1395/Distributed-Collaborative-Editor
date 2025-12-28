@@ -26,7 +26,7 @@ We welcome contributors of all levels! If you'd like to help, please read [CONTR
 - [Live Demo](#-live-demo)
 - [Quick Start (Local Development)](#-quick-start-local-development)
 - [Environment Configuration](#-environment-configuration)
-- [Running Locally](#-running-locally)
+- [Running Locally](#%ef%b8%8f-running-locally)
 - [Metrics](#-metrics)
 - [UI Preview](#-ui-preview)
 - [Troubleshooting](#-troubleshooting)
