@@ -155,9 +155,8 @@ ALLOWED_ORIGINS=http://localhost:3000
 
 ### Start Frontend
 ```bash
-cd web
-npm install
-npm run dev
+cd syncraft
+npm start
 ```
 
 Runs at:
@@ -171,7 +170,7 @@ http://localhost:3000
 ```bash
 cd server
 npm install
-npm run dev
+npm start
 # OR
 node custom_server.js
 ```
@@ -184,17 +183,6 @@ ws://localhost:4000
 
 ---
 
-## 🧩 What to Expect Locally
-
-| Service     | URL |
-|------------|-----|
-| Frontend   | http://localhost:3000 |
-| Backend    | http://localhost:4000 |
-| WebSocket  | ws://localhost:4000 |
-
-If using **Upstash**, set `REDIS_URL` to your Upstash connection string.
-
----
 
 ## 🖥 UI Preview
 
@@ -238,7 +226,7 @@ Please ensure the project runs locally before submitting.
 
 - Granular document permissions
 - Comments & suggestions mode
-- Export to PDF / Markdown
+- Export to Word Document
 - Improved offline persistence
 - End-to-end encryption (E2EE)
 
