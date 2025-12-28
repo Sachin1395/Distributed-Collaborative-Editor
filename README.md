@@ -38,7 +38,7 @@ We welcome contributors of all levels! If you'd like to help, please read [CONTR
 <td><strong>🚀 Getting Started</strong></td>
 <td>
 <a href="#-live-demo">Live Demo</a> ·
-<a href="#-quick-start-local-development">Quick Start Local Development</a> ·
+<a href="#-quick-start-local-development">Quick Start (Local Development)</a> ·
 <a href="#-environment-configuration">Environment Configuration</a> ·
 <a href="#%EF%B8%8F-running-locally">Running Locally</a>
 </td>
