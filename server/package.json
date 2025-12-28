@@ -9,7 +9,7 @@
   "keywords": [],
   "type": "module",
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "@hocuspocus/extension-redis": "^3.2.3",
