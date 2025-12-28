@@ -19,21 +19,51 @@ We welcome contributors of all levels! If you'd like to help, please read [CONTR
 ---
 
 ## 📑 Table of Contents
-- [What is SyncDraft?](#-what-is-syncdraft)
-- [Features](#-features)
-- [Architecture Overview](#-architecture-overview)
-- [Tech Stack](#-tech-stack)
-- [Live Demo](#-live-demo)
-- [Quick Start (Local Development)](#-quick-start-local-development)
-- [Environment Configuration](#-environment-configuration)
-- [Running Locally](#%ef%b8%8f-running-locally)
-- [Metrics](#-metrics)
-- [UI Preview](#-ui-preview)
-- [Troubleshooting](#-troubleshooting)
-- [Security Notes](#-security-notes)
-- [Contributing](#-contributing)
-- [Roadmap](#-roadmap)
-- [License](#-license)
+
+> [!TIP]
+> Use this navigation map to jump to the section you need.
+
+<table>
+<tr>
+<td><strong>🧭 Overview</strong></td>
+<td>
+<a href="#-what-is-syncdraft">What is SyncDraft?</a> ·
+<a href="#-features">Features</a> ·
+<a href="#-architecture-overview">Architecture Overview</a> ·
+<a href="#-tech-stack">Tech Stack</a>
+</td>
+</tr>
+
+<tr>
+<td><strong>🚀 Getting Started</strong></td>
+<td>
+<a href="#-live-demo">Live Demo</a> ·
+<a href="#-quick-start-local-development">Quick Start Local Development</a> ·
+<a href="#-environment-configuration">Environment Configuration</a> ·
+<a href="#%EF%B8%8F-running-locally">Running Locally</a>
+</td>
+</tr>
+
+<tr>
+<td><strong>📈 Operations</strong></td>
+<td>
+<a href="#-metrics">Metrics</a> ·
+<a href="#-ui-preview">UI Preview</a> ·
+<a href="#-troubleshooting">Troubleshooting</a> ·
+<a href="#-security-notes">Security Notes</a>
+</td>
+</tr>
+
+<tr>
+<td><strong>🗂 Project</strong></td>
+<td>
+<a href="#-contributing">Contributing</a> ·
+<a href="#-roadmap">Roadmap</a> ·
+<a href="#-license">License</a>
+</td>
+</tr>
+</table>
+
 
 ---
 
