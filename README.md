@@ -19,21 +19,21 @@ We welcome contributors of all levels! If you'd like to help, please read [CONTR
 ---
 
 ## 📑 Table of Contents
-- What is SyncDraft?
-- Features
-- Architecture Overview
-- Tech Stack
-- Live Demo
-- Quick Start (Local Development)
-- Environment Configuration
-- Running Locally
-- Metrics
-- UI Preview
-- Troubleshooting
-- Security Notes
-- Contributing
-- Roadmap
-- License
+- [What is SyncDraft?](#what-is-syncdraft)
+- [Features](#features)
+- [Architecture Overview](#architecture-overview)
+- [Tech Stack](#tech-stack)
+- [Live Demo](#live-demo)
+- [Quick Start (Local Development)](#quick-start-local-development)
+- [Environment Configuration](#environment-configuration)
+- [Running Locally](#running-locally)
+- [Metrics](#metrics)
+- [UI Preview](#ui-preview)
+- [Troubleshooting](#troubleshooting)
+- [Security Notes](#security-notes)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ---
 
