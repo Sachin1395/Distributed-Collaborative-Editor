@@ -537,7 +537,7 @@ export default function LandingPage() {
             <div className="footer-section">
               <h4 className="footer-heading">Resources</h4>
               <ul className="footer-list">
-                <li><a href="#" className="footer-link">Documentation</a></li>
+                <li><a href="https://github.com/Sachin1395/Distributed-Collaborative-Editor/" className="footer-link">Documentation</a></li>
               </ul>
             </div>
           </div>
